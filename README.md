@@ -1,0 +1,144 @@
+# Time Tracker
+
+A SaaS-oriented time tracking application designed to replace spreadsheet-based employee time tracking.
+
+The application is initially intended for internal company use, but the architecture is designed to support multiple organizations and future SaaS expansion.
+
+---
+
+## Objectives
+
+The application should provide a centralized system for:
+
+- Employee time tracking
+- Projects
+- Timesheets
+- Approvals
+- Reports
+- User management
+- Organization management
+- Role-based access control
+- Auditability
+
+---
+
+## Technology Stack
+
+### Frontend
+
+- React
+- TypeScript
+- Vite
+- React Router
+
+### UI
+
+- Tailwind CSS
+- shadcn/ui
+- Lucide
+
+### Forms
+
+- React Hook Form
+- Zod
+
+### Backend
+
+- Supabase
+- PostgreSQL
+- Supabase Auth
+
+### Data Management
+
+- TanStack Query
+- TanStack Table
+
+### Notifications
+
+- Sonner
+
+### Testing
+
+- Vitest
+- Testing Library
+
+---
+
+## Project Structure
+
+```text
+src/
+├── app/
+├── assets/
+├── components/
+├── features/
+├── hooks/
+├── layouts/
+├── lib/
+├── pages/
+├── schemas/
+├── services/
+└── types/
+
+docs/
+├── product.md
+├── architecture.md
+├── database.md
+├── security.md
+├── design-system.md
+├── testing.md
+└── roadmap.md
+
+supabase/
+├── migrations/
+├── functions/
+└── seed/
+
+Environment Variables
+
+Create a .env file at the project root.
+
+Required variables:
+
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
+
+Never commit .env.
+
+Use .env.example as the template for required environment variables.
+
+Development
+
+Install dependencies:
+
+npm install
+
+Start the development server:
+
+npm run dev
+
+Run linting:
+
+npm run lint
+
+Run the production build:
+
+npm run build
+
+Run tests when configured:
+
+npm run test
+Development Philosophy
+
+The project is intentionally developed in phases.
+
+Features should be implemented incrementally rather than generating the entire application at once.
+
+The goal is to maintain:
+
+Clear architecture
+Understandable code
+Strong security
+Consistent UI
+Testable features
+Maintainable database design
