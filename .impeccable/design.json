@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-26T00:00:00Z",
+  "title": "Design System: Time Trackr",
+  "extensions": {
+    "colorMeta": {
+      "teal": {
+        "role": "primary",
+        "displayName": "Ledger Teal",
+        "canonical": "oklch(0.5 0.1 195)",
+        "tonalRamp": [
+          "oklch(0.18 0.03 195)",
+          "oklch(0.28 0.05 195)",
+          "oklch(0.38 0.08 195)",
+          "oklch(0.5 0.1 195)",
+          "oklch(0.6 0.11 195)",
+          "oklch(0.72 0.12 195)",
+          "oklch(0.84 0.08 195)",
+          "oklch(0.945 0.02 195)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(0.16 0.006 235)",
+        "tonalRamp": [
+          "oklch(0.16 0.006 235)",
+          "oklch(0.26 0.01 235)",
+          "oklch(0.38 0.008 235)",
+          "oklch(0.5 0.008 235)",
+          "oklch(0.63 0.006 235)",
+          "oklch(0.76 0.005 235)",
+          "oklch(0.89 0.004 235)",
+          "oklch(0.967 0.003 235)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "oklch(1 0 0)",
+        "tonalRamp": [
+          "oklch(0.15 0.008 235)",
+          "oklch(0.195 0.008 235)",
+          "oklch(0.26 0.01 235)",
+          "oklch(0.5 0.008 235)",
+          "oklch(0.75 0.006 235)",
+          "oklch(0.9 0.004 235)",
+          "oklch(0.967 0.003 235)",
+          "oklch(1 0 0)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "title": { "displayName": "Title", "purpose": "Card titles, section headers." },
+      "body": { "displayName": "Body", "purpose": "Form values, table cells, paragraph copy." },
+      "label": { "displayName": "Label", "purpose": "Form labels, field legends." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "state-transition", "value": "transition-all (default duration/easing, Tailwind)", "purpose": "Button, input, and focus-ring state changes." },
+      { "name": "active-press", "value": "translate-y-px on :active", "purpose": "Tactile press feedback on buttons without haspopup." }
+    ],
+    "breakpoints": [
+      { "name": "md", "value": "768px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Default call-to-action button; solid teal.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Sign in</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; height: 2rem; padding: 0 0.625rem; border-radius: 0.5rem; border: 1px solid transparent; font-size: 0.875rem; font-weight: 500; font-family: 'Geist Variable', sans-serif; white-space: nowrap; transition: all 0.15s; cursor: pointer; } .ds-btn-primary { background: oklch(0.5 0.1 195); color: oklch(0.99 0.005 195); } .ds-btn-primary:hover { background: oklch(0.5 0.1 195 / 0.8); } .ds-btn-primary:focus-visible { outline: none; border-color: oklch(0.5 0.1 195); box-shadow: 0 0 0 3px oklch(0.5 0.1 195 / 0.5); } .ds-btn-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action button with a border, no fill.",
+      "html": "<button class=\"ds-btn ds-btn-outline\">Cancel</button>",
+      "css": ".ds-btn-outline { background: oklch(1 0 0); color: oklch(0.16 0.006 235); border: 1px solid oklch(0.914 0.004 235); } .ds-btn-outline:hover { background: oklch(0.967 0.003 235); } .ds-btn-outline:focus-visible { outline: none; border-color: oklch(0.5 0.1 195); box-shadow: 0 0 0 3px oklch(0.5 0.1 195 / 0.5); }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Flat container with a hairline ring border, used for auth forms and future content panels.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-header\"><div class=\"ds-card-title\">Sign in</div><div class=\"ds-card-desc\">Enter your email and password to access your account.</div></div><div class=\"ds-card-content\">Card content</div></div>",
+      "css": ".ds-card { display: flex; flex-direction: column; gap: 1rem; padding: 1rem 0; border-radius: 0.875rem; background: oklch(1 0 0); box-shadow: 0 0 0 1px oklch(0.16 0.006 235 / 0.1); font-size: 0.875rem; color: oklch(0.16 0.006 235); } .ds-card-header { display: flex; flex-direction: column; gap: 0.25rem; padding: 0 1rem; } .ds-card-title { font-weight: 500; font-size: 1rem; line-height: 1.375; } .ds-card-desc { font-size: 0.875rem; color: oklch(0.5 0.008 235); } .ds-card-content { padding: 0 1rem; }"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Text field used across all forms; shares the teal focus ring with buttons.",
+      "html": "<input class=\"ds-input\" type=\"email\" placeholder=\"you@company.com\" />",
+      "css": ".ds-input { height: 2rem; width: 100%; min-width: 0; border-radius: 0.5rem; border: 1px solid oklch(0.914 0.004 235); background: transparent; padding: 0.25rem 0.625rem; font-size: 1rem; color: oklch(0.16 0.006 235); outline: none; transition: color 0.15s, border-color 0.15s; } .ds-input::placeholder { color: oklch(0.5 0.008 235); } .ds-input:focus-visible { border-color: oklch(0.5 0.1 195); box-shadow: 0 0 0 3px oklch(0.5 0.1 195 / 0.5); } .ds-input:disabled { pointer-events: none; cursor: not-allowed; opacity: 0.5; background: oklch(0.967 0.003 235 / 0.5); } .ds-input[aria-invalid='true'] { border-color: oklch(0.577 0.245 27.325); box-shadow: 0 0 0 3px oklch(0.577 0.245 27.325 / 0.2); }"
+    },
+    {
+      "name": "Sidebar Nav Item (active)",
+      "kind": "nav",
+      "refersTo": "sidebar-nav-item-active",
+      "description": "Active route in the authenticated shell's sidebar; teal-tinted fill.",
+      "html": "<a class=\"ds-navitem ds-navitem-active\" href=\"#\">Dashboard</a>",
+      "css": ".ds-navitem { display: flex; align-items: center; gap: 0.625rem; border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; font-weight: 500; font-family: 'Geist Variable', sans-serif; text-decoration: none; color: oklch(0.96 0.004 235 / 0.8); transition: background-color 0.15s, color 0.15s; } .ds-navitem-active { background: oklch(0.28 0.035 195); color: oklch(0.86 0.06 195); } .ds-navitem:not(.ds-navitem-active):hover { background: oklch(0.28 0.035 195 / 0.6); color: oklch(0.86 0.06 195); }"
+    },
+    {
+      "name": "Empty State",
+      "kind": "custom",
+      "refersTo": "empty-state",
+      "description": "Not-yet-populated content panel — dashed border, icon chip, label, honest one-line explanation, no fabricated data.",
+      "html": "<div class=\"ds-empty\"><div class=\"ds-empty-icon\">&#9201;</div><div><p class=\"ds-empty-title\">No time tracked yet</p><p class=\"ds-empty-desc\">Time tracking is coming in an upcoming release.</p></div></div>",
+      "css": ".ds-empty { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 4rem 1.5rem; text-align: center; border: 1px dashed oklch(1 0 0 / 10%); border-radius: 0.875rem; } .ds-empty-icon { display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: 0.5rem; background: oklch(0.28 0.035 195); color: oklch(0.86 0.06 195); } .ds-empty-title { font-size: 0.875rem; font-weight: 500; color: oklch(0.96 0.004 235); } .ds-empty-desc { margin-top: 0.25rem; max-width: 20rem; font-size: 0.875rem; color: oklch(0.66 0.012 235); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Quiet Ledger",
+    "overview": "Time Trackr replaces a spreadsheet, and the interface earns that trust by behaving like a well-kept one: calm, precise, legible at a glance, nothing decorative competing with the numbers. The system is near-monochrome ink-on-slate — Geist Variable throughout, flat surfaces separated by hairline borders rather than shadows — with exactly one accent color, a deep teal, spent only on the things that matter: the primary action, the active nav item, focus rings, and links. Teal was chosen over the indigo/violet that most AI-generated SaaS tools default to; it reads precise and slightly technical without competing with data density. Both light and dark tokens are first-class in the system, but there's no theme toggle yet, so the app ships dark-only by default.",
+    "keyCharacteristics": [
+      "Near-neutral grayscale with a cool cast (hue ~235) everywhere except the one accent hue (~195, teal).",
+      "Flat by default: no box-shadows anywhere; depth comes from a ring-1 hairline border and background-tone contrast.",
+      "Teal is reserved for primary buttons, active/selected states, focus rings, and links only.",
+      "Geist Variable is the only typeface, carrying both UI text and headings."
+    ],
+    "rules": [
+      { "name": "The One Accent Rule", "body": "Teal appears only on the primary action, the active/selected state, focus rings, and links. It never fills a card, a full section background, or a large decorative area.", "section": "colors" },
+      { "name": "The No-Shadow Rule", "body": "Every elevation cue is a ring-1/border hairline plus a one-step background-tone shift, never a box-shadow. This holds in both themes.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do reserve teal for exactly one thing per view: the primary action, the active nav state, a focus ring, or a link.",
+      "Do use the hairline-ring + tone-shift pattern for any new raised surface instead of adding a shadow.",
+      "Do keep both light and dark themes updated together.",
+      "Do use bg-destructive/10 for the default destructive button treatment."
+    ],
+    "donts": [
+      "Don't introduce a second accent color without deliberately updating DESIGN.md.",
+      "Don't add box-shadow anywhere.",
+      "Don't mix in a second typeface for headings or numerals.",
+      "Don't round corners past rounded-xl (cards) or below rounded-lg (buttons/inputs) without a documented reason."
+    ]
+  }
+}

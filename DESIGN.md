@@ -1,113 +1,205 @@
-# Time Tracker — Visual Design Tokens
+---
+name: Time Trackr
+description: Restrained enterprise light/dark system — near-neutral ink surfaces with a single confident teal accent.
+colors:
+  ink:
+    light: "oklch(0.16 0.006 235)"
+    dark: "oklch(0.96 0.004 235)"
+  surface:
+    light: "oklch(1 0 0)"
+    dark: "oklch(0.15 0.008 235)"
+  surface-raised:
+    light: "oklch(1 0 0)"
+    dark: "oklch(0.195 0.008 235)"
+  teal:
+    light: "oklch(0.5 0.1 195)"
+    dark: "oklch(0.72 0.12 195)"
+  teal-foreground:
+    light: "oklch(0.99 0.005 195)"
+    dark: "oklch(0.15 0.02 195)"
+  teal-wash:
+    light: "oklch(0.945 0.02 195)"
+    dark: "oklch(0.28 0.035 195)"
+  neutral-secondary:
+    light: "oklch(0.967 0.003 235)"
+    dark: "oklch(0.26 0.01 235)"
+  neutral-muted-fg:
+    light: "oklch(0.5 0.008 235)"
+    dark: "oklch(0.66 0.012 235)"
+  border:
+    light: "oklch(0.914 0.004 235)"
+    dark: "oklch(1 0 0 / 10%)"
+  destructive:
+    light: "oklch(0.577 0.245 27.325)"
+    dark: "oklch(0.704 0.191 22.216)"
+typography:
+  body:
+    fontFamily: "'Geist Variable', sans-serif"
+    fontSize: "0.875rem"
+    fontWeight: 400
+    lineHeight: 1.4
+  title:
+    fontFamily: "'Geist Variable', sans-serif"
+    fontSize: "1rem"
+    fontWeight: 500
+    lineHeight: 1.375
+  label:
+    fontFamily: "'Geist Variable', sans-serif"
+    fontSize: "0.875rem"
+    fontWeight: 500
+    lineHeight: 1.4
+rounded:
+  sm: "0.375rem"
+  md: "0.5rem"
+  lg: "0.625rem"
+  xl: "0.875rem"
+spacing:
+  xs: "0.375rem"
+  sm: "0.625rem"
+  md: "1rem"
+  lg: "1.5rem"
+components:
+  button-primary:
+    backgroundColor: "{colors.teal}"
+    textColor: "{colors.teal-foreground}"
+    rounded: "{rounded.lg}"
+    padding: "0 0.625rem"
+    height: "2rem"
+  button-primary-hover:
+    backgroundColor: "{colors.teal}"
+  button-outline:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.lg}"
+  card:
+    backgroundColor: "{colors.surface-raised}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.xl}"
+    padding: "1rem"
+  input:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.lg}"
+    height: "2rem"
+---
+
+# Design System: Time Trackr
 
 ## Overview
 
-A calm, confident enterprise dashboard aesthetic: warm off-white canvas, crisp white cards, one disciplined indigo primary, and soft pastel icon chips used to color-code metric categories at a glance. Bold, tight-tracked headline type for "welcome"/summary moments; clean uppercase micro-labels for structure (section eyebrows, table headers, stat labels). High information density (stat rows, tables, charts) balanced by generous card padding and rounded, friendly corners rather than sharp enterprise-gray boxes.
+**Creative North Star: "The Quiet Ledger"**
 
-This file defines concrete tokens (colors, type, spacing, components). Behavioral rules (loading/empty/error states, accessibility, when to use which pattern) stay in `docs/design-system.md`, which references this file for the actual values.
+Time Trackr replaces a spreadsheet, and the interface earns that trust by behaving like a well-kept one: calm, precise, legible at a glance, nothing decorative competing with the numbers. The system is near-monochrome ink-on-paper (light) or ink-on-slate (dark) — Geist Variable throughout, flat surfaces separated by hairline borders rather than shadows — with exactly one accent color, a deep teal, spent only on the things that matter: the primary action, the active nav item, focus rings, and links. Teal was chosen over the indigo/violet that most AI-generated SaaS tools default to; it reads precise and slightly technical (closer to a stopwatch bezel or a ledger stamp than a marketing gradient) without competing with data density. The accent's restraint is deliberate: an enterprise time-tracking tool used for hours a day should recede, not perform.
 
----
+Both light and dark themes are first-class tokens. The authenticated app (everything inside `ProtectedLayout`) has a working light/dark toggle — a sun/moon icon button in the sidebar footer, backed by `useTheme` (`src/hooks/use-theme.ts`) / `ThemeProvider` (`src/app/providers/ThemeProvider.tsx`) and persisted to `localStorage` — defaulting to dark on first visit, the same restrained-plus-one-accent strategy, with the teal boosted in lightness and slightly in chroma so it reads as confident against a dark ink background rather than muddy. The auth threshold (`AuthLayout`) is unaffected by that toggle and always renders dark — see the Dark Threshold Rule.
+
+**Key Characteristics:**
+- Near-neutral grayscale-with-a-cool-cast (a hint of blue undertone, hue ~235) everywhere except the one accent hue (~195, teal).
+- Flat by default: no box-shadows anywhere in the system; depth comes from a `ring-1` hairline border and background-tone contrast.
+- Teal is reserved for primary buttons, active/selected states, focus rings, and links — never used as a decorative fill or background wash beyond the deliberate `accent`/`sidebar-accent` hover tint.
+- Geist Variable is the only typeface, carrying both UI text and headings via `--font-heading: var(--font-sans)`.
 
 ## Colors
 
-- **Primary** (#4F46E5): CTAs, active nav state, links, focus rings, chart highlight bar — indigo
-- **Primary Hover** (#4338CA): Darker indigo for hover/active-press states
-- **Primary Soft** (#E0E7FF): Active nav row background, indigo icon-chip background
-- **Background** (#F7F5F2): App canvas — warm off-white, sits behind all cards
-- **Surface** (#FFFFFF): Sidebar, cards, tables, modals, top bar
-- **Border** (#ECEAE6): Card borders, dividers, input borders — subtle and recessive
-- **Text Primary** (#111827): Headings, values, primary labels
-- **Text Secondary** (#6B7280): Descriptions, supporting copy
-- **Text Muted** (#9CA3AF): Uppercase micro-labels, placeholders, table headers, timestamps
-- **Success** (#16A34A) / soft bg (#DCFCE7): Positive deltas, "Approved"/"Completed" status
-- **Warning** (#F59E0B) / soft bg (#FEF3C7): "Pending" status, caution banners
-- **Error** (#EF4444) / soft bg (#FEE2E2): Negative deltas, "Rejected" status, destructive actions
+The palette is Restrained: neutrals carry the interface, one accent carries meaning.
 
-### Icon-chip tints
+### Primary
+- **Ledger Teal** (`oklch(0.5 0.1 195)` light / `oklch(0.72 0.12 195)` dark): primary buttons, focus rings, active sidebar/nav item, links, selected states. This is the only saturated color in the system — used sparingly, never as a large background fill.
 
-Used only for the icon square on stat cards, to let a metric category be recognized at a glance. Exactly four tints — do not add a fifth without removing one:
+### Neutral
+- **Ink** (`oklch(0.16 0.006 235)` light / `oklch(0.96 0.004 235)` dark): body text, headings, primary foreground on light surfaces.
+- **Paper / Slate** (`oklch(1 0 0)` light / `oklch(0.15 0.008 235)` dark): page background.
+- **Card Surface** (`oklch(1 0 0)` light / `oklch(0.195 0.008 235)` dark): cards and popovers sit one step lighter than the page background in dark mode (`0.195` vs `0.15`) to read as a raised layer without a shadow; in light mode both stay white and separation comes entirely from the border.
+- **Secondary / Muted** (`oklch(0.967 0.003 235)` light / `oklch(0.26 0.01 235)` dark): secondary buttons, muted backgrounds, disabled fills.
+- **Muted Foreground** (`oklch(0.5 0.008 235)` light / `oklch(0.66 0.012 235)` dark): help text, placeholders, timestamps, secondary labels.
+- **Border** (`oklch(0.914 0.004 235)` light / `oklch(1 0 0 / 10%)` dark): the sole depth cue between surfaces — cards, inputs, dividers.
 
-- Lavender chip (bg #E0E7FF, icon #4F46E5) — time/hours-related metrics
-- Green chip (bg #DCFCE7, icon #16A34A) — people/team/active metrics
-- Red chip (bg #FEE2E2, icon #EF4444) — risk/overdue/at-risk metrics
-- Peach chip (bg #FFEDD5, icon #F97316) — utilization/productivity metrics
+### Named Rules
+**The One Accent Rule.** Teal appears only on the primary action, the active/selected state, focus rings, and links. It never fills a card, a full section background, or a large decorative area — its rarity is what makes it legible as "this matters" in a data-dense screen.
 
----
+**The No-Shadow Rule.** Every elevation cue is a `ring-1`/`border` hairline plus a one-step background-tone shift, never a `box-shadow`. This holds in both themes.
 
 ## Typography
 
-Single family: **Geist Variable** (already installed via `@fontsource-variable/geist`) for both display and body — its wide weight range covers everything this theme needs, so no second typeface is introduced.
+**Body/UI Font:** Geist Variable (with `sans-serif` fallback)
+**Heading Font:** Geist Variable (`--font-heading` aliases `--font-sans` — no separate display face)
 
-- Headline / "Welcome back" moments: 32px, bold (700), tight letter-spacing (-0.02em)
-- Section heading (card titles like "MRR Trends"): 18–20px, semibold (600)
-- Stat value (e.g. "$482,900"): 28–32px, bold (700)
-- Body: 14px, regular (400) / medium (500) for emphasis
-- Small / table cells: 13px, regular (400)
-- Micro-label (eyebrows, table headers, stat labels): 11–12px, medium (500), uppercase, letter-spacing 0.06em, Text Muted color
+**Character:** A single variable-weight grotesque carries the whole system; hierarchy comes from weight and size steps, not from mixing faces. Appropriate for an Operate-mode tool where scanability outranks expression.
 
----
+### Hierarchy
+- **Title** (500, 1rem/16px, leading-snug): card titles, section headers.
+- **Body** (400, 0.875rem/14px, 1.4 line-height): form values, table cells, paragraph copy.
+- **Label** (500, 0.875rem/14px): form labels, field legends.
+- **Small / Description** (400, 0.875rem/14px, muted-foreground): helper text, timestamps, descriptions under titles.
 
-## Elevation
+## Layout
 
-Cards are flat by default: 1px Border, no shadow at rest. On hover (interactive cards/rows only): shadow `0 8px 24px rgba(17,24,39,0.06)` plus a 1–2px lift. The gradient insight card and primary buttons get a tinted glow on hover: `0 4px 14px rgba(79,70,229,0.28)`. Focus states use a 3px indigo ring (`0 0 0 3px rgba(79,70,229,0.15)`), never a shadow. The top bar uses a hairline bottom border rather than a shadow to separate from content.
+`AuthLayout` forces its own `dark` class independent of any toggle, so the auth threshold always renders the dark token set — see the Named Rule below. The authenticated shell (`ProtectedLayout`) defaults to dark but wraps itself in a `ThemeProvider` (`src/app/providers/ThemeProvider.tsx`) and applies `dark` conditionally based on the user's toggle choice, scoped to its own subtree only.
 
----
+**Auth (`AuthLayout`):** split layout at `lg` and above — a fixed-width (`42%`, capped `max-w-xl`) brand panel on the left (`AuthBrandPanel`), and a right column that centers a `max-w-sm` card. Below `lg` the brand panel is hidden entirely and the right column becomes the full-width page.
 
-## Spacing
+**Authenticated shell (`ProtectedLayout`):** a fixed-width (`18rem`/`w-72`) sidebar plus a fluid main content column. At `lg`+ the sidebar is a permanent fixed column; below `lg` it collapses off-canvas behind a hamburger trigger in a slim top bar, sliding in as an overlay drawer (backdrop click or Escape to close).
 
-- Base unit: 4px
-- Scale: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64px
-- Card padding: 24px (stat/chart/insight cards), 16px (table rows)
-- Section gaps: 24px between dashboard rows
-- Sidebar width: 260px fixed
-- Content max width: fluid, 24–32px horizontal page padding
+Spacing inside forms and cards runs on a `gap-4` (1rem) rhythm between fields and a `gap-1.5`–`gap-0.5` rhythm within a single label/input/error group.
 
----
+### Named Rule
+**The Dark Threshold Rule.** `AuthLayout` carries its own `dark` class independent of the light/dark toggle wired up in `ProtectedLayout`, so it stays a fixed dark "threshold" regardless of the user's chosen theme. Do not remove that class or make it toggle-aware — the authenticated app follows the toggle; auth never does.
 
-## Border Radius
+## Elevation & Depth
 
-- 8px: Buttons, inputs, search bar
-- 12px: Table row hover backgrounds, small chips
-- 16px: Stat cards, chart card, insight/CTA card
-- 9999px: Avatars/initial chips, status pills, active-nav indicator dot, delta badges
+Flat by design — no `box-shadow` anywhere in the codebase. Depth is conveyed by two devices only: a `ring-1 ring-foreground/10` hairline around cards, and a one-step background-tone shift between the page and a raised surface (most visible in dark mode, where cards sit at `oklch(0.195 ...)` against a `oklch(0.15 ...)` page; in light mode both are pure white and the ring alone carries the separation).
 
----
+## Shapes
+
+Corners run on a single `--radius: 0.625rem` base, scaled via Tailwind's radius tokens (`--radius-sm` through `--radius-4xl`, each a multiple of the base). Cards and their first/last images use `rounded-xl`; buttons and inputs use `rounded-lg`; the smallest icon-button sizes clamp to `min(var(--radius-md),10-12px)` so they don't look over-rounded at small scale. No hard corners, no pill shapes — one consistent moderate-radius language throughout.
 
 ## Components
 
-- **App shell**: Fixed 260px white sidebar (logo + product name top, nav in the middle, account block pinned to the bottom) + white top bar (search, notification/help icons, page title) + Background-colored content area.
-- **Sidebar nav item**: Icon + label, 14px medium. Active item: Primary text color, a 3px Primary vertical bar on the left edge, and a Primary Soft pill background behind the row. Inactive items: Text Secondary, no background, hover shows a faint gray background.
-- **Stat card**: Surface, 16px radius, 1px Border, 24px padding. Icon chip (44px, 12px radius, one of the four tints) top-left; colored delta (e.g. "+8.2%") top-right in Success/Error with no background. Micro-label above a bold stat value below.
-- **Chart card**: Surface, 16px radius. Header row: title + supporting one-line copy on the left, a segmented pill toggle (e.g. "Weekly / Monthly") on the right — inactive segment transparent, active segment white with a subtle shadow inside a Background-tinted pill track. Bars render in a muted neutral tint by default; the single relevant/current bar renders in solid Primary.
-- **Insight / CTA card**: Solid gradient background (135deg, Primary → Primary Hover), white text. Uppercase eyebrow label, bold short headline, one line of supporting copy, and a solid white button with Primary text. Use at most one per screen — it's a highlight, not a layout container.
-- **Table**: Surface card wrapper. Header row: Text Muted, uppercase, 12px, no background, bottom border. Body rows: 16px vertical padding, 1px divider between rows, hover shows a faint Background-tinted row highlight. Entity cells pair a circular initials chip (Border-colored background, Text Secondary initials) with a name. Status column uses a pill (Success/Warning/Error soft background + matching text color, 9999px radius). A "View All" link sits top-right of the table header in Primary.
-- **Search bar**: Pill-shaped (9999px or 8px, matching the reference), Background-tinted fill, muted search icon, Text Muted placeholder. Lives in the top bar, not the sidebar.
-- **Buttons**: Primary — solid Primary fill, white text, 8px radius, medium weight, tinted glow on hover. Secondary — Background/gray fill, Text Primary, 8px radius (e.g. "Export Report"). Ghost — no fill/border, Text Secondary, background darkens slightly on hover. Destructive — Error text and border, no fill until hover.
-- **Status/role chips** (e.g. "Pro Admin", "Enterprise" plan tags): small pill, Border-colored background, Text Secondary text, 9999px radius, non-interactive.
+### Buttons
+- **Shape:** `rounded-lg` (~8px), scales down slightly for `xs`/`sm` sizes.
+- **Primary:** Ledger Teal background, teal-foreground text, `hover:bg-primary/80`. Reserved for the one primary action per view (e.g. "Sign in").
+- **Outline:** transparent/background fill, `border-border`, hover fills `bg-muted`. Default choice for secondary actions.
+- **Secondary:** neutral secondary fill, subtle `color-mix` hover darken — no accent color.
+- **Ghost:** no fill or border at rest; `hover:bg-muted`.
+- **Destructive:** `bg-destructive/10` at rest (not a solid fill), `text-destructive`, darkens on hover — deliberately quieter than a solid red button so destructive actions don't visually dominate a form.
+- **Link:** teal text, underline on hover only.
+- **Focus:** `focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50` — the teal ring is the only focus treatment in the system, shared by buttons and inputs.
 
----
+### Cards / Containers
+- **Corner Style:** `rounded-xl`.
+- **Background:** Card Surface token (see Colors).
+- **Shadow Strategy:** none — see Elevation & Depth.
+- **Border:** `ring-1 ring-foreground/10` in place of a shadow.
+- **Internal Padding:** `--card-spacing: 1rem` (0.75rem for the `sm` card size variant).
+
+### Inputs / Fields
+- **Style:** `rounded-lg`, `border-input`, transparent background (`bg-input/30` in dark mode), `h-8`.
+- **Focus:** same teal ring treatment as buttons (`focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50`).
+- **Error / Disabled:** invalid fields get `border-destructive` + a destructive-tinted ring via `aria-invalid`; disabled fields drop opacity and gain a faint `bg-input/50` fill.
+- **Field labels/errors:** `FieldLabel`/`FormLabel` at label weight; `FieldError`/`FormMessage` in `text-destructive`, deduplicated when multiple Zod errors share a message.
+
+### Navigation (Sidebar)
+`ProtectedLayout`'s sidebar (see Layout): `w-72`, `bg-sidebar`, hairline `border-r border-sidebar-border`, no shadow. Top-to-bottom: `BrandMark` (see below) in a `h-14` header row; a nav list where the active route gets `bg-sidebar-accent text-sidebar-accent-foreground` (teal-tinted) and inactive items are `sidebar-foreground/80` with a quieter hover fill; a hairline `Separator`; a footer row with a teal initials avatar, name/email, and a sign-out icon button. Nav items for product areas not built yet (everything except Dashboard, as of Phase 1) render as non-interactive rows at `sidebar-foreground/40` with a small bordered "Soon" pill instead of a working link — the IA is shown honestly without linking to pages that don't exist. Below `lg` the sidebar becomes an off-canvas overlay drawer (`w-72`, black/60 backdrop, closes on backdrop click or Escape) triggered by a hamburger in a slim top bar that carries the same `BrandMark`.
+
+### Brand Mark
+`BrandMark` (`src/components/brand-mark.tsx`) — the small, legible, everywhere-else brand expression: a crisp custom-drawn clock glyph (single-stroke SVG, `currentColor` in the primary teal) plus "Time Trackr" set in Geist. Used in the sidebar header and the mobile top bar. Deliberately not the glowing logo image — at small sizes the image's internal letterboxing makes it unreadable (see Auth Brand Panel).
+
+### Auth Brand Panel (signature component)
+The left panel on `AuthLayout` (`lg`+ only, part of the dark auth threshold — see Layout). A `justify-between` column over two decorative background layers: a soft blurred teal glow (`~18%` opacity, `110px` blur) for atmosphere, and a full-bleed "ledger rows" motif — thin horizontal ruled hairlines plus a column of pill-shaped bars of varying width at low opacity, two tinted teal to read as selected/active entries. In front, top to bottom: the full glowing product logo at hero size (rendered with `mix-blend-mode: screen` so its black backdrop drops out against the panel and only the glow/wordmark register), then a headline and supporting line pulled from product truth, anchored to the bottom. This is the one place in the system where teal rides inside a large dark field and where the product's own saturated glow logo appears at full size — bounded to this panel, never extended to app content or reused at small size (use `BrandMark` instead). Built as a slot: swap `LedgerRows`/`Glow` for a full-bleed photograph (keep a bottom gradient for legibility) once real imagery exists, per the comment in `AuthBrandPanel.tsx`.
+
+### Empty States
+`DashboardPage`'s pattern for a not-yet-populated screen: a dashed-border (`border-dashed border-border`) rounded panel, generous vertical padding, a small icon in an `bg-accent` chip, a one-line label, and an honest one-line explanation of when real content will appear. No fabricated numbers or sample data — an empty state says "not built yet" or "no data yet" plainly rather than simulating activity.
 
 ## Do's and Don'ts
 
-- Do use Primary indigo only for interactive/active elements (buttons, links, active nav, chart highlight) — never as decoration or a static heading color.
-- Do keep the four icon-chip tints assigned consistently per metric category across the whole app — don't reassign colors per screen.
-- Do keep the Background/Surface contrast (warm off-white canvas, pure white cards) — it's what gives the layered, uncluttered look.
-- Do use uppercase micro-labels only for eyebrows, table headers, and stat labels — never for body copy or buttons.
-- Do maintain the 4px spacing grid for all padding, margins, and gaps.
-- Don't use pure black (#000000) or pure white (#FFFFFF) for text — use Text Primary/Secondary/Muted.
-- Don't add more than one gradient insight/CTA card per screen.
-- Don't mix the 16px "big card" radius with the 8px "control" radius on the same element type — cards stay large-radius, inputs/buttons stay small-radius.
-- Don't use a shadow on a static (non-hover, non-focus) element.
-- Don't introduce a second typeface — Geist covers the full weight range this theme needs.
+### Do:
+- **Do** reserve teal for exactly one thing per view: the primary action, the active nav state, a focus ring, or a link — never more than one saturated color on screen at once.
+- **Do** use the hairline-ring + tone-shift pattern for any new raised surface (dropdowns, dialogs, popovers) instead of adding a shadow.
+- **Do** keep both light and dark themes updated together — every token added to `:root` needs a `.dark` counterpart tuned for contrast, not a straight copy.
+- **Do** use `bg-destructive/10` (not a solid destructive fill) for the default destructive button treatment; reserve a solid destructive fill for higher-stakes confirmations only if one is introduced later.
 
----
-
-## Mapping to Time Tracker screens
-
-This reference dashboard is a SaaS analytics product; translate its patterns rather than copying its content:
-
-- Sidebar nav: Dashboard, Time Tracking, Timesheets, Approvals, Projects, Reports, Settings (roles gate which items render).
-- Dashboard stat cards: Hours Logged This Week, Active Projects, Pending Approvals, Team Utilization (in place of Revenue/Subscriptions/Churn/MRR).
-- Chart card: Weekly/Monthly hours-logged trend (in place of MRR trend), with the current period's bar in solid Primary.
-- Insight/CTA card (optional, manager/admin dashboards only): e.g. "3 timesheets need your review" with a "Review Now" button — not shown to individual contributors with nothing pending.
-- Table: Recent Time Entries or Recent Timesheet Submissions, with Approved/Pending/Rejected status pills and initials chips for the employee.
+### Don't:
+- **Don't** introduce a second accent color (no blue-for-info, green-for-success, orange-for-warning family) without deliberately updating this file — status color scoping for timesheet/approval states (Phase 7-8) should be decided explicitly, not accreted button-by-button.
+- **Don't** add `box-shadow` anywhere; it breaks the flat/hairline elevation model this system commits to.
+- **Don't** mix in a second typeface for headings or numerals; Geist Variable's weight axis carries the whole hierarchy.
+- **Don't** round corners past `rounded-xl` (cards) or below `rounded-lg` (buttons/inputs) without a documented reason — the moderate, consistent radius is part of the "quiet ledger" restraint.
