@@ -26,6 +26,7 @@ src/
 ├── pages/
 ├── schemas/
 ├── services/
+├── test/
 └── types/
 ```
 
@@ -133,6 +134,12 @@ Examples:
 - Configuration
 
 Avoid putting business-specific logic in generic utility files.
+
+### `test/`
+
+Contains shared test setup only (e.g. the Vitest/Testing Library setup file).
+
+Test files themselves are colocated next to the code they test (e.g. `Button.tsx` and `Button.test.tsx` in the same folder), not gathered into a separate `__tests__` tree. See `docs/testing.md`.
 
 ### `pages/`
 

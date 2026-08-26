@@ -8,6 +8,15 @@ Do not implement the entire application in a single pass.
 
 ---
 
+# Cross-Cutting Concerns
+
+Some product areas are not their own phase because they are addressed incrementally, inside other phases, rather than all at once. Treat these as standing obligations, not a gap:
+
+- **Settings** — organization settings land in Phase 2, project settings in Phase 5, notification preferences in Phase 10. There is no single "Settings phase"; each phase that introduces a settings surface is responsible for it.
+- **Audit logging** — a minimal audit foundation (generic log table + a trigger/service pattern) is introduced in Phase 4, immediately after RBAC exists, rather than bolted on at the end. Each later phase that adds meaningful mutations (projects, time entries, timesheets, approvals) should write into that foundation as it goes. Phase 11 is where audit coverage and the audit log UI are finished and verified, not where logging starts.
+
+---
+
 # Phase 0 — Engineering Foundation
 
 ## Goal
@@ -68,29 +77,12 @@ Establish organization-level ownership of application data.
 - Organization context
 - Organization switching if required
 - Organization-level data isolation
+- Basic invite mechanism (an org owner can invite a member) so Phase 3 has real members to manage
 - Initial RLS design
 
 ---
 
-# Phase 3 — Authorization / RBAC
-
-## Goal
-
-Control what users are allowed to do.
-
-## Includes
-
-- Roles
-- Permissions
-- Role assignment
-- Permission checks
-- Frontend authorization
-- Database authorization
-- RLS policies
-
----
-
-# Phase 4 — Users / Employees
+# Phase 3 — Users / Employees
 
 ## Goal
 
@@ -104,6 +96,27 @@ Manage users within an organization.
 - Inviting users
 - User status
 - User administration
+
+---
+
+# Phase 4 — Authorization / RBAC
+
+## Goal
+
+Control what users are allowed to do.
+
+Builds on the real organization members introduced in Phases 2–3 — role assignment needs actual members to assign roles to.
+
+## Includes
+
+- Roles
+- Permissions
+- Role assignment
+- Permission checks
+- Frontend authorization
+- Database authorization
+- RLS policies
+- Minimal audit log foundation (generic audit table + trigger/service pattern) for later phases to write into (see Cross-Cutting Concerns above)
 
 ---
 
@@ -166,6 +179,8 @@ Provide structured employee timesheets.
 
 Allow authorized users to review and approve submitted timesheets.
 
+Note: approvals/rejections are silent (no notification) until Phase 10 wires up notifications. This is intentional sequencing, not a gap — confirm status changes by checking the review queue/history until then.
+
 ## Includes
 
 - Review queue
@@ -214,16 +229,17 @@ Provide useful system notifications.
 
 ## Goal
 
-Provide traceability for important actions.
+Complete traceability for important actions, building on the audit foundation introduced in Phase 4. This phase finishes coverage and adds a way to view it — it does not introduce audit logging for the first time.
 
 ## Includes
 
-- Audit records
+- Audit coverage for any mutation not already writing into the Phase 4 foundation (organizations, users, projects, time entries, timesheets, approvals)
 - Actor
 - Action
 - Timestamp
 - Resource
 - Relevant metadata
+- Audit log viewer/UI
 
 ---
 

@@ -52,10 +52,24 @@ The application should provide a centralized system for:
 
 - TanStack Query
 - TanStack Table
+- TanStack Virtual (large lists/tables)
+
+### Date/Time
+
+- date-fns
+- @date-fns/tz
 
 ### Notifications
 
 - Sonner
+
+### Charts
+
+- Recharts
+
+### Client State
+
+- Zustand (narrow, cross-component client state only)
 
 ### Testing
 
@@ -78,6 +92,7 @@ src/
 ├── pages/
 ├── schemas/
 ├── services/
+├── test/
 └── types/
 
 docs/
@@ -125,9 +140,13 @@ Run the production build:
 
 npm run build
 
-Run tests when configured:
+Run tests:
 
 npm run test
+
+Run tests in watch mode:
+
+npm run test:watch
 Development Philosophy
 
 The project is intentionally developed in phases.

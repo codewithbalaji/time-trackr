@@ -4,6 +4,8 @@
 
 Provide a consistent, accessible, professional enterprise UI across the application.
 
+For concrete tokens — colors, typography, spacing, radius, and component visual specs — see `DESIGN.md` at the project root. This file covers behavior and rules; `DESIGN.md` covers the actual values.
+
 ---
 
 ## UI Stack

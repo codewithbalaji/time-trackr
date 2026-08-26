@@ -6,6 +6,8 @@ This repository contains a SaaS Time Tracking application built with React, Type
 
 The application is initially being built for internal company use but should be architected so it can support multiple organizations and scale as a SaaS product.
 
+See `docs/product.md` for target users, core product areas, and non-goals.
+
 ## Primary Goal
 
 Build a maintainable, secure, scalable enterprise-style application while keeping the code understandable to a developer who is learning the architecture.
@@ -42,10 +44,27 @@ The AI agent must prioritize clarity, correctness, maintainability, and consiste
 
 - Sonner
 
+## Charts
+
+- Recharts
+
+## Client State
+
+- Zustand — use only for narrow, genuinely cross-component client state (e.g. an active timer). Prefer local component state and TanStack Query's server-state cache first; see "Do Not Over-Engineer".
+
+## Date/Time
+
+- date-fns
+- @date-fns/tz — for organization/user timezone display; store and compute in UTC (see `docs/database.md`).
+
+## Large Lists
+
+- @tanstack/react-virtual — for virtualized rendering of large tables/lists where needed.
+
 ## Testing
 
 - Vitest
-- Testing Library
+- Testing Library (`@testing-library/react`, `@testing-library/jest-dom`, `@testing-library/user-event`)
 
 ---
 
@@ -112,6 +131,7 @@ Use feature-based architecture combined with shared application infrastructure.
 - `src/pages` - Route-level screens when a page is not owned by a feature.
 - `src/schemas` - Shared validation schemas.
 - `src/services` - Shared application/data services.
+- `src/test` - Shared test setup (test files are colocated with the code they test).
 - `src/types` - Shared TypeScript types.
 
 Feature-specific code should stay inside its feature whenever practical.
@@ -130,6 +150,8 @@ may contain:
 - `pages`
 
 Do not move feature-specific code into global folders without a reason.
+
+See `docs/architecture.md` for full detail, including separation of responsibilities and feature ownership rules.
 
 ---
 
@@ -174,8 +196,7 @@ Do not duplicate validation rules across multiple places when the same business 
 - Never place secrets in `VITE_*` variables.
 - Database changes must be made through migrations.
 - Do not manually modify production database schema.
-- Use Row Level Security for protected application data.
-- Never rely only on frontend authorization for security.
+- Use Row Level Security for protected application data (see Security Rules below).
 
 ---
 
@@ -281,7 +302,8 @@ For example:
 
 - Authentication belongs to Phase 1.
 - Organizations belong to Phase 2.
-- RBAC belongs to Phase 3.
+- Users/Employees belong to Phase 3.
+- RBAC belongs to Phase 4.
 - Time tracking belongs to a later phase.
 
 Do not prematurely implement future features.
@@ -292,9 +314,7 @@ Do not prematurely implement future features.
 
 When an architectural decision changes, update the relevant documentation.
 
-When a major architectural decision is made, consider adding an Architecture Decision Record under:
-
-`docs/decisions/`
+When a major architectural decision is made, consider adding an Architecture Decision Record under `docs/decisions/`, using `docs/decisions/template.md` as the starting point.
 
 ---
 

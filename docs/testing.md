@@ -6,6 +6,12 @@ Build confidence that the application works correctly and that important functio
 
 Testing should focus on business-critical behavior rather than achieving an arbitrary percentage.
 
+## File Location
+
+Colocate test files next to the code they test (e.g. `Button.tsx` and `Button.test.tsx` in the same folder).
+
+Shared test setup (e.g. Testing Library/jsdom setup) lives in `src/test/`.
+
 ## Testing Levels
 
 ## Unit Tests
