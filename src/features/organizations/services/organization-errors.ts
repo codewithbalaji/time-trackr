@@ -13,6 +13,14 @@ const ORGANIZATION_ERROR_MESSAGES: Record<string, string> = {
   email_exists: "That person already has an account.",
   user_already_exists: "That person already has an account.",
   over_email_send_rate_limit: "Too many invitations sent. Please wait before trying again.",
+  membership_not_found: "That member no longer exists.",
+  insufficient_permissions: "You don't have permission to do that.",
+  role_not_found: "That role doesn't exist in this organization.",
+  membership_identity_change_forbidden: "That change isn't allowed.",
+  cannot_change_own_role: "You can't change your own role.",
+  only_owner_can_manage_owner_role: "Only an owner can grant or remove the Owner role.",
+  cannot_remove_last_owner: "This organization needs at least one owner — promote someone else first.",
+  already_a_member: "You're already a member of this organization. If your account was suspended, ask an admin to reactivate you from the Members page.",
 }
 
 export function mapOrganizationError(error: Pick<PostgrestError, "message" | "code">): string {

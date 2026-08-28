@@ -22,8 +22,15 @@ export function AuthCallbackPage() {
   const [searchParams] = useSearchParams()
 
   const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""))
+  // GoTrue doesn't always send `error_description` (some error paths only set
+  // `error`/`error_code`), so check all three rather than just the one.
   const hasErrorInUrl = Boolean(
-    searchParams.get("error_description") ?? hashParams.get("error_description")
+    searchParams.get("error_description") ??
+      searchParams.get("error_code") ??
+      searchParams.get("error") ??
+      hashParams.get("error_description") ??
+      hashParams.get("error_code") ??
+      hashParams.get("error")
   )
   const isRecovery =
     searchParams.get("type") === "recovery" || hashParams.get("type") === "recovery"
@@ -68,7 +75,12 @@ export function AuthCallbackPage() {
           </div>
           <CardTitle className="mt-3">This link is invalid or has expired</CardTitle>
           <CardDescription>
-            Request a new confirmation or password reset email and try again.
+            Email confirmation, password reset, and team invitation links only
+            work once and expire after a while. If you were confirming your
+            email or resetting your password, sign in or use "Forgot
+            password" to request a new link. If you were accepting a team
+            invitation, ask whoever invited you to resend it from their
+            organization's Members page.
           </CardDescription>
         </CardHeader>
         <CardContent>

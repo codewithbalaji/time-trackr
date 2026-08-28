@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { inviteAcceptSchema } from "@/features/organizations/schemas/invite-accept.schema"
+import { inviteAcceptSchema } from "@/features/users/schemas/invite-accept.schema"
 
 describe("inviteAcceptSchema", () => {
   it("accepts a valid name and matching passwords", () => {

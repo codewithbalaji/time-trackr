@@ -34,10 +34,15 @@ export async function requireOrganization() {
     throw redirect("/onboarding")
   }
   const currentOrganizationId = useOrganizationStore.getState().currentOrganizationId
-  const hasValidSelection = memberships.some(
+  const selected = memberships.find(
     (membership) => membership.organization.id === currentOrganizationId
   )
-  if (!hasValidSelection) {
+  // Re-checked on every navigation (see getMemberships' fetchQuery comment
+  // above), so a member suspended mid-session gets sent back to the picker
+  // — which shows their suspended orgs disabled — on their very next
+  // navigation, instead of the app silently rendering empty/broken pages
+  // for someone whose access RLS has already revoked.
+  if (!selected || selected.status !== "active") {
     throw redirect("/select-organization")
   }
   return null

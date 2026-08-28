@@ -5,17 +5,19 @@ import { supabase } from "@/lib/supabase"
 export type CreateInvitationInput = {
   organizationId: string
   email: string
+  roleId: string
   invitedBy: string
 }
 
 export async function createInvitation({
   organizationId,
   email,
+  roleId,
   invitedBy,
 }: CreateInvitationInput) {
   const { data, error } = await supabase
     .from("invitations")
-    .insert({ organization_id: organizationId, email, invited_by: invitedBy })
+    .insert({ organization_id: organizationId, email, role_id: roleId, invited_by: invitedBy })
     .select()
     .single()
   if (error) throw error
@@ -42,7 +44,7 @@ async function toInvitationError(error: unknown) {
 
 export type InvitationPreview = {
   email: string
-  role: "owner" | "member"
+  role_name: string
   status: "pending" | "accepted" | "revoked"
   expires_at: string
   organization_name: string
@@ -63,5 +65,52 @@ export async function acceptInvitation(token: string) {
     p_token: token,
   })
   if (error) throw error
+  return data
+}
+
+export type PendingInvitation = {
+  id: string
+  email: string
+  role: { id: string; name: string }
+  status: "pending" | "accepted" | "revoked"
+  expires_at: string
+  created_at: string
+}
+
+export async function listPendingInvitations(
+  organizationId: string
+): Promise<PendingInvitation[]> {
+  const { data, error } = await supabase
+    .from("invitations")
+    .select("id, email, role:roles(id, name), status, expires_at, created_at")
+    .eq("organization_id", organizationId)
+    .eq("status", "pending")
+    .order("created_at", { ascending: true })
+  if (error) throw error
+  return data as unknown as PendingInvitation[]
+}
+
+export async function revokeInvitation(id: string) {
+  const { error } = await supabase.from("invitations").update({ status: "revoked" }).eq("id", id)
+  if (error) throw error
+}
+
+// Resend just extends the expiry window and re-sends the same email; the
+// invitation row (and its token) stays the same rather than issuing a new one.
+export async function resendInvitation(id: string) {
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+  const { data, error } = await supabase
+    .from("invitations")
+    .update({ expires_at: expiresAt })
+    .eq("id", id)
+    .select()
+    .single()
+  if (error) throw error
+
+  const { error: sendError } = await supabase.functions.invoke("send-invite-email", {
+    body: { invitationId: data.id, isResend: true },
+  })
+  if (sendError) throw await toInvitationError(sendError)
+
   return data
 }

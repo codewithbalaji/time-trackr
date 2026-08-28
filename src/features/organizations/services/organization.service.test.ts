@@ -38,8 +38,8 @@ describe("createOrganizationWithOwner", () => {
 describe("getMembershipsForUser", () => {
   it("queries memberships by user_id and returns every row (a user can belong to more than one org)", async () => {
     const memberships = [
-      { id: "m-1", role: "owner", organization: { id: "org-1", name: "Acme" } },
-      { id: "m-2", role: "member", organization: { id: "org-2", name: "Widgets Co" } },
+      { id: "m-1", role: { id: "r-1", name: "Owner" }, organization: { id: "org-1", name: "Acme" } },
+      { id: "m-2", role: { id: "r-2", name: "Member" }, organization: { id: "org-2", name: "Widgets Co" } },
     ]
     const builder = createQueryBuilderMock({ data: memberships, error: null })
     mockSupabase.from.mockReturnValue(builder)

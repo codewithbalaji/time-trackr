@@ -27,9 +27,10 @@ Deno.serve(async (req) => {
   const adminClient = createClient(supabaseUrl, serviceRoleKey)
 
   let invitationId: string | undefined
+  let isResend = false
 
   try {
-    ;({ invitationId } = await req.json())
+    ;({ invitationId, isResend = false } = await req.json())
     if (!invitationId) {
       return jsonResponse({ error: "invitationId is required" }, 400)
     }
@@ -70,13 +71,17 @@ Deno.serve(async (req) => {
       // permanently blocked by the "one pending invite per email" constraint
       // after a delivery failure. Uses the service-role client since the
       // client-facing RLS on invitations deliberately has no delete policy.
-      await adminClient.from("invitations").delete().eq("id", invitationId)
+      // Only for a first-time create, though — a resend's row is an existing
+      // pending invitation, and a transient send failure shouldn't destroy it.
+      if (!isResend) {
+        await adminClient.from("invitations").delete().eq("id", invitationId)
+      }
       return jsonResponse({ error: inviteError.message, code: inviteError.code }, 400)
     }
 
     return jsonResponse({ ok: true }, 200)
   } catch (error) {
-    if (invitationId) {
+    if (invitationId && !isResend) {
       await adminClient.from("invitations").delete().eq("id", invitationId)
     }
     return jsonResponse({ error: error instanceof Error ? error.message : "Unexpected error" }, 500)

@@ -155,12 +155,25 @@ max_indexes = 5
 [auth]
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
-# in emails.
-site_url = "http://127.0.0.1:5173"
+# in emails. `npm run dev` is reachable at both localhost and 127.0.0.1, but
+# browsers treat them as different origins for redirect matching, so the
+# actual dev URL (localhost) is the one that matters here.
+site_url = "http://localhost:5173"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["http://127.0.0.1:5173"]
+# Supabase Auth also supports `*`/`**` globs here — needed because the app's
+# emailRedirectTo/redirectTo always point at /auth/callback (see
+# src/features/auth/services/auth.service.ts), not the bare origin: without a
+# matching entry, GoTrue silently falls back to `site_url` (the app root)
+# instead of honoring the requested redirect. Both hosts are listed since
+# either can be used to reach the local dev server.
+additional_redirect_urls = [
+  "http://localhost:5173",
+  "http://localhost:5173/**",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5173/**",
+]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -232,8 +245,14 @@ secure_password_change = false
 max_frequency = "1s"
 # Number of characters used in the email OTP.
 otp_length = 6
-# Number of seconds before the email OTP expires (defaults to 1 hour).
-otp_expiry = 3600
+# Number of seconds before the email OTP expires. Applies to every email link
+# type (confirmation, recovery, magic link, AND org invites — there's no
+# per-template override), so it needs to be generous enough for someone to
+# notice and open an invite email, not just a signup confirmation. Raised from
+# the 1-hour default; the invite flow's own resend/revoke UI (Members page)
+# is the real fix for a truly stale invite, this just avoids expiring links
+# that are only a few hours old.
+otp_expiry = 86400
 
 # Resend's SMTP relay — see docs/decisions/0002-organization-rls-and-invites.md.
 # `pass` is resolved from the RESEND_SMTP_PASSWORD env var at push/start time,

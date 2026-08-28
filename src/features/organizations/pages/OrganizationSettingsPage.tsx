@@ -1,12 +1,10 @@
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
 import { useCurrentOrganization } from "@/features/organizations/hooks/useCurrentOrganization"
-import { CreateInvitationForm } from "@/features/organizations/components/CreateInvitationForm"
 
 export function OrganizationSettingsPage() {
   const membership = useCurrentOrganization()
@@ -22,16 +20,9 @@ export function OrganizationSettingsPage() {
         <CardHeader>
           <CardTitle>{membership?.organization.name ?? "Organization"}</CardTitle>
           <CardDescription>
-            {membership?.role === "owner"
-              ? "Invite a teammate by email. They'll get a link to join."
-              : "Only the organization owner can invite new members."}
+            To manage members and invitations, see the Members page.
           </CardDescription>
         </CardHeader>
-        {membership?.role === "owner" && (
-          <CardContent>
-            <CreateInvitationForm organizationId={membership.organization.id} />
-          </CardContent>
-        )}
       </Card>
     </div>
   )

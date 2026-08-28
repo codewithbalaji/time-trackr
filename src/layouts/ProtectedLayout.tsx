@@ -26,11 +26,16 @@ import { useTheme } from "@/hooks/use-theme"
 import { useLogout } from "@/features/auth/hooks/useLogout"
 import { useProfile } from "@/features/auth/hooks/useProfile"
 import { useCurrentOrganization } from "@/features/organizations/hooks/useCurrentOrganization"
+import { useHasPermission } from "@/features/roles/hooks/useHasPermission"
 
 type NavItem = {
   label: string
   icon: typeof LayoutDashboard
   to?: string
+  // Route is guarded server-side by requirePermission() (see router.tsx) —
+  // this just keeps the nav from linking a plain Member to a page that will
+  // immediately bounce them back to "/" with no explanation.
+  permissionKey?: string
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -39,8 +44,13 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Projects", icon: FolderKanban },
   { label: "Timesheets", icon: ListChecks },
   { label: "Reports", icon: BarChart3 },
-  { label: "Team", icon: Users },
-  { label: "Settings", to: "/settings", icon: Settings },
+  { label: "Team", to: "/members", icon: Users },
+  {
+    label: "Settings",
+    to: "/settings",
+    icon: Settings,
+    permissionKey: "organization.manage_settings",
+  },
 ]
 
 export function ProtectedLayout() {
@@ -130,8 +140,15 @@ function Sidebar({
   const navigate = useNavigate()
   const { data: profile } = useProfile()
   const currentOrganization = useCurrentOrganization()
+  const canManageSettings = useHasPermission(
+    currentOrganization?.organization.id,
+    "organization.manage_settings"
+  )
   const logout = useLogout()
   const { theme, toggleTheme } = useTheme()
+  const visibleNavItems = NAV_ITEMS.filter(
+    (item) => !item.permissionKey || canManageSettings
+  )
 
   function handleLogout() {
     logout.mutate(undefined, {
@@ -187,7 +204,7 @@ function Sidebar({
       )}
 
       <nav className="flex flex-1 flex-col gap-0.5 p-3">
-        {NAV_ITEMS.map((item) => {
+        {visibleNavItems.map((item) => {
           const Icon = item.icon
 
           if (!item.to) {

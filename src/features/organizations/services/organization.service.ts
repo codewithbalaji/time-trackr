@@ -10,7 +10,8 @@ export async function createOrganizationWithOwner(name: string) {
 
 export type MembershipWithOrganization = {
   id: string
-  role: "owner" | "member"
+  role: { id: string; name: string }
+  status: "active" | "suspended"
   organization: { id: string; name: string }
 }
 
@@ -22,8 +23,8 @@ export async function getMembershipsForUser(
 ): Promise<MembershipWithOrganization[]> {
   const { data, error } = await supabase
     .from("memberships")
-    .select("id, role, organization:organizations(id, name)")
+    .select("id, role:roles(id, name), status, organization:organizations(id, name)")
     .eq("user_id", userId)
   if (error) throw error
-  return data as MembershipWithOrganization[]
+  return data as unknown as MembershipWithOrganization[]
 }

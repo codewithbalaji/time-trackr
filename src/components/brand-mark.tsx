@@ -1,23 +1,17 @@
+import logo from "@/assets/logo.png"
 import { cn } from "@/lib/utils"
 
-// Shared clock glyph + wordmark. The full glowing product logo (src/assets/logo.png)
-// only reads clearly at hero size (see AuthBrandPanel) — this crisp drawn mark is
-// used everywhere else the brand needs to be small and legible (sidebar, etc).
+// The full product logo (icon + wordmark). Its artwork is light-on-transparent
+// (designed for the always-dark AuthBrandPanel), so anywhere it can sit on a
+// theme-following surface (sidebar, mobile top bar) it gets a small fixed-dark
+// chip behind it — otherwise the wordmark disappears in the light theme.
 export function BrandMark({ className }: { className?: string }) {
   return (
-    <div className={cn("flex items-center gap-2", className)}>
-      <svg viewBox="0 0 24 24" aria-hidden="true" className="size-6 shrink-0 text-primary">
-        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.75" />
-        <path
-          d="M12 7v5l3.5 2"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.75"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <span className="font-heading text-base font-medium">Time Trackr</span>
+    <div
+      className={cn("inline-flex w-fit shrink-0 items-center rounded-md px-2.5 py-1", className)}
+      style={{ backgroundColor: "oklch(0.15 0.008 235)" }}
+    >
+      <img src={logo} alt="Time Trackr" className="h-9 w-auto" />
     </div>
   )
 }

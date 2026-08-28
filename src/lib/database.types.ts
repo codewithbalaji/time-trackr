@@ -1,5 +1,7 @@
-// Hand-written to match supabase/migrations/20260826052413_create_profiles.sql and
-// supabase/migrations/20260827135646_create_organizations.sql.
+// Hand-written to match supabase/migrations/20260826052413_create_profiles.sql,
+// supabase/migrations/20260827135646_create_organizations.sql,
+// supabase/migrations/20260829090000_phase3_member_management_rls.sql, and
+// supabase/migrations/20260830120000_phase4_rbac.sql.
 // Regenerate with `supabase gen types typescript --linked > src/lib/database.types.ts`
 // once the migrations have been applied to a reachable database, and replace this file.
 
@@ -59,7 +61,8 @@ export type Database = {
           id: string
           organization_id: string
           user_id: string
-          role: "owner" | "member"
+          role_id: string
+          status: "active" | "suspended"
           created_at: string
           updated_at: string
         }
@@ -67,7 +70,8 @@ export type Database = {
           id?: string
           organization_id: string
           user_id: string
-          role?: "owner" | "member"
+          role_id: string
+          status?: "active" | "suspended"
           created_at?: string
           updated_at?: string
         }
@@ -75,7 +79,8 @@ export type Database = {
           id?: string
           organization_id?: string
           user_id?: string
-          role?: "owner" | "member"
+          role_id?: string
+          status?: "active" | "suspended"
           created_at?: string
           updated_at?: string
         }
@@ -87,6 +92,20 @@ export type Database = {
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "memberships_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       invitations: {
@@ -94,7 +113,7 @@ export type Database = {
           id: string
           organization_id: string
           email: string
-          role: "owner" | "member"
+          role_id: string
           token: string
           status: "pending" | "accepted" | "revoked"
           invited_by: string
@@ -107,7 +126,7 @@ export type Database = {
           id?: string
           organization_id: string
           email: string
-          role?: "owner" | "member"
+          role_id: string
           token?: string
           status?: "pending" | "accepted" | "revoked"
           invited_by: string
@@ -120,7 +139,7 @@ export type Database = {
           id?: string
           organization_id?: string
           email?: string
-          role?: "owner" | "member"
+          role_id?: string
           token?: string
           status?: "pending" | "accepted" | "revoked"
           invited_by?: string
@@ -132,6 +151,137 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          id: string
+          organization_id: string
+          name: string
+          is_system: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          organization_id: string
+          name: string
+          is_system?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          name?: string
+          is_system?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      permissions: {
+        Row: {
+          id: string
+          key: string
+          description: string
+        }
+        Insert: {
+          id?: string
+          key: string
+          description: string
+        }
+        Update: {
+          id?: string
+          key?: string
+          description?: string
+        }
+        Relationships: []
+      }
+      role_permissions: {
+        Row: {
+          role_id: string
+          permission_id: string
+        }
+        Insert: {
+          role_id: string
+          permission_id: string
+        }
+        Update: {
+          role_id?: string
+          permission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_logs: {
+        Row: {
+          id: string
+          organization_id: string
+          actor_id: string | null
+          action: string
+          target_type: string
+          target_id: string | null
+          metadata: Record<string, unknown>
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          organization_id: string
+          actor_id?: string | null
+          action: string
+          target_type: string
+          target_id?: string | null
+          metadata?: Record<string, unknown>
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          actor_id?: string | null
+          action?: string
+          target_type?: string
+          target_id?: string | null
+          metadata?: Record<string, unknown>
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -154,15 +304,23 @@ export type Database = {
         Args: { p_token: string }
         Returns: {
           email: string
-          role: string
+          role_name: string
           status: string
           expires_at: string
           organization_name: string
         }[]
       }
+      has_permission: {
+        Args: { p_organization_id: string; p_permission_key: string }
+        Returns: boolean
+      }
+      assign_membership_role: {
+        Args: { p_membership_id: string; p_role_id: string }
+        Returns: Database["public"]["Tables"]["memberships"]["Row"]
+      }
     }
-    // Roles are plain `check`-constrained text columns, not Postgres enums (see the
-    // organizations migration), so there is nothing to list here.
+    // Roles are rows in the `roles` table (per-organization, database-driven),
+    // not a Postgres enum — see supabase/migrations/20260830120000_phase4_rbac.sql.
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>
   }

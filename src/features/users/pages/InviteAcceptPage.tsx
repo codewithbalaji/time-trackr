@@ -9,8 +9,8 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useAuthStore } from "@/features/auth/stores/authStore"
-import { useInvitation } from "@/features/organizations/hooks/useInvitation"
-import { InviteAcceptForm } from "@/features/organizations/components/InviteAcceptForm"
+import { useInvitation } from "@/features/users/hooks/useInvitation"
+import { InviteAcceptForm } from "@/features/users/components/InviteAcceptForm"
 
 function InvalidInviteCard({ description }: { description: string }) {
   return (

@@ -15,8 +15,18 @@ const { requireOrganization, redirectIfOnboarded, requireMemberships } = await i
   "@/features/organizations/lib/route-guards"
 )
 
-const ORG_A = { id: "m-1", role: "owner" as const, organization: { id: "org-1", name: "Acme" } }
-const ORG_B = { id: "m-2", role: "member" as const, organization: { id: "org-2", name: "Widgets Co" } }
+const ORG_A = {
+  id: "m-1",
+  role: { id: "r-1", name: "Owner" },
+  status: "active" as const,
+  organization: { id: "org-1", name: "Acme" },
+}
+const ORG_B = {
+  id: "m-2",
+  role: { id: "r-2", name: "Member" },
+  status: "active" as const,
+  organization: { id: "org-2", name: "Widgets Co" },
+}
 
 function isRedirectTo(error: unknown, path: string) {
   return (
@@ -75,6 +85,16 @@ describe("requireOrganization", () => {
     useOrganizationStore.setState({ currentOrganizationId: "org-2" })
 
     await expect(requireOrganization()).resolves.toBeNull()
+  })
+
+  it("redirects to /select-organization when the selected membership has been suspended", async () => {
+    const suspended = { ...ORG_A, status: "suspended" as const }
+    vi.mocked(getMembershipsForUser).mockResolvedValue([suspended])
+    useOrganizationStore.setState({ currentOrganizationId: suspended.organization.id })
+
+    await expect(requireOrganization()).rejects.toSatisfy((error: unknown) =>
+      isRedirectTo(error, "/select-organization")
+    )
   })
 })
 

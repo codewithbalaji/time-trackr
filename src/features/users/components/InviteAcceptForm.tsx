@@ -16,8 +16,10 @@ import { Input } from "@/components/ui/input"
 import {
   inviteAcceptSchema,
   type InviteAcceptInput,
-} from "@/features/organizations/schemas/invite-accept.schema"
-import { useAcceptInvitation } from "@/features/organizations/hooks/useAcceptInvitation"
+} from "@/features/users/schemas/invite-accept.schema"
+import { useAcceptInvitation } from "@/features/users/hooks/useAcceptInvitation"
+import { updateProfile } from "@/features/auth/services/profile.service"
+import { useAuthStore } from "@/features/auth/stores/authStore"
 import { supabase } from "@/lib/supabase"
 
 export function InviteAcceptForm({
@@ -30,6 +32,7 @@ export function InviteAcceptForm({
   organizationName: string
 }) {
   const navigate = useNavigate()
+  const userId = useAuthStore((state) => state.session?.user.id)
   const acceptInvitation = useAcceptInvitation()
   const form = useForm<InviteAcceptInput>({
     resolver: zodResolver(inviteAcceptSchema),
@@ -44,6 +47,19 @@ export function InviteAcceptForm({
     if (error) {
       toast.error("Something went wrong. Please try again.")
       return
+    }
+
+    // updateUser() above only changes auth.users' metadata — handle_new_user
+    // only syncs full_name into profiles on INSERT (i.e. for a normal
+    // signup), not on a later metadata update, so an invited user's name has
+    // to be written to profiles directly here. Non-fatal: they can still fix
+    // it from their profile settings, so it shouldn't block joining the org.
+    if (userId) {
+      try {
+        await updateProfile(userId, values.fullName)
+      } catch {
+        toast.error("Your name couldn't be saved — you can set it from your profile settings.")
+      }
     }
 
     acceptInvitation.mutate(token, {

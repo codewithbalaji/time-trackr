@@ -13,10 +13,13 @@ import {
   redirectIfOnboarded,
   requireMemberships,
 } from "@/features/organizations/lib/route-guards"
+import { requirePermission } from "@/features/roles/lib/route-guards"
 import { OnboardingPage } from "@/features/organizations/pages/OnboardingPage"
-import { InviteAcceptPage } from "@/features/organizations/pages/InviteAcceptPage"
+import { InviteAcceptPage } from "@/features/users/pages/InviteAcceptPage"
 import { SelectOrganizationPage } from "@/features/organizations/pages/SelectOrganizationPage"
 import { OrganizationSettingsPage } from "@/features/organizations/pages/OrganizationSettingsPage"
+import { MembersPage } from "@/features/users/pages/MembersPage"
+import { ProfilePage } from "@/features/users/pages/ProfilePage"
 import { DashboardPage } from "@/pages/DashboardPage"
 
 export const router = createBrowserRouter([
@@ -42,7 +45,13 @@ export const router = createBrowserRouter([
     loader: requireOrganization,
     children: [
       { path: "/", element: <DashboardPage /> },
-      { path: "/settings", element: <OrganizationSettingsPage /> },
+      { path: "/members", element: <MembersPage /> },
+      { path: "/profile", element: <ProfilePage /> },
+      {
+        path: "/settings",
+        element: <OrganizationSettingsPage />,
+        loader: requirePermission("organization.manage_settings"),
+      },
     ],
   },
 ])
