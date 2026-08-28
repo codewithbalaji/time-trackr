@@ -8,6 +8,15 @@ import { SignupPage } from "@/features/auth/pages/SignupPage"
 import { ForgotPasswordPage } from "@/features/auth/pages/ForgotPasswordPage"
 import { ResetPasswordPage } from "@/features/auth/pages/ResetPasswordPage"
 import { AuthCallbackPage } from "@/features/auth/pages/AuthCallbackPage"
+import {
+  requireOrganization,
+  redirectIfOnboarded,
+  requireMemberships,
+} from "@/features/organizations/lib/route-guards"
+import { OnboardingPage } from "@/features/organizations/pages/OnboardingPage"
+import { InviteAcceptPage } from "@/features/organizations/pages/InviteAcceptPage"
+import { SelectOrganizationPage } from "@/features/organizations/pages/SelectOrganizationPage"
+import { OrganizationSettingsPage } from "@/features/organizations/pages/OrganizationSettingsPage"
 import { DashboardPage } from "@/pages/DashboardPage"
 
 export const router = createBrowserRouter([
@@ -19,11 +28,21 @@ export const router = createBrowserRouter([
       { path: "/forgot-password", element: <ForgotPasswordPage /> },
       { path: "/reset-password", element: <ResetPasswordPage /> },
       { path: "/auth/callback", element: <AuthCallbackPage /> },
+      { path: "/onboarding", element: <OnboardingPage />, loader: redirectIfOnboarded },
+      { path: "/invite/accept", element: <InviteAcceptPage />, loader: requireSession },
+      {
+        path: "/select-organization",
+        element: <SelectOrganizationPage />,
+        loader: requireMemberships,
+      },
     ],
   },
   {
     element: <ProtectedLayout />,
-    loader: requireSession,
-    children: [{ path: "/", element: <DashboardPage /> }],
+    loader: requireOrganization,
+    children: [
+      { path: "/", element: <DashboardPage /> },
+      { path: "/settings", element: <OrganizationSettingsPage /> },
+    ],
   },
 ])

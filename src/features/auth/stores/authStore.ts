@@ -20,13 +20,20 @@ export const useAuthStore = create<AuthState>(() => ({
 }))
 
 let initialized = false
+let ready: Promise<void> | undefined
 
 // Idempotent: safe to call multiple times (e.g. from both main.tsx and tests).
+// Returns a promise that resolves once the initial session lookup has landed
+// in the store — main.tsx awaits this before creating the router, since
+// createBrowserRouter starts running the initial route's loader as soon as
+// it's constructed, regardless of when <RouterProvider> mounts. Without
+// awaiting this first, the very first loader run would see the store's
+// default `session: null` and redirect to /login even with a valid session.
 export function initAuthStore() {
-  if (initialized) return
+  if (initialized) return ready!
   initialized = true
 
-  supabase.auth.getSession().then(({ data }) => {
+  ready = supabase.auth.getSession().then(({ data }) => {
     useAuthStore.setState({
       session: data.session,
       status: data.session ? "authenticated" : "unauthenticated",
@@ -39,4 +46,6 @@ export function initAuthStore() {
       status: session ? "authenticated" : "unauthenticated",
     })
   })
+
+  return ready
 }

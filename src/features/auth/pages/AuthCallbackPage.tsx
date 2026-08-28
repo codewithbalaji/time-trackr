@@ -41,7 +41,21 @@ export function AuthCallbackPage() {
         return
       }
 
-      navigate(isRecovery ? "/reset-password" : "/login", { replace: true })
+      // The `type=invite` URL param isn't reliable here: Supabase's PKCE auth
+      // flow redirects with only `?code=...`, dropping `type`. The invite
+      // Edge Function stamps `invitation_token` into user_metadata via
+      // inviteUserByEmail's `data` option, which survives on the session
+      // regardless of flow type, so that's the signal we key off instead.
+      const isInvite = Boolean(data.session.user?.user_metadata?.invitation_token)
+
+      // Only three link types ever land here: signup confirmation, password
+      // recovery, and org invites — everything else is a fresh signup
+      // confirmation, which always needs onboarding next. A stale/reclicked
+      // confirmation link from an already-onboarded user is handled by
+      // redirectIfOnboarded on the /onboarding route itself.
+      navigate(isRecovery ? "/reset-password" : isInvite ? "/invite/accept" : "/onboarding", {
+        replace: true,
+      })
     })
   }, [navigate, hasErrorInUrl, isRecovery])
 

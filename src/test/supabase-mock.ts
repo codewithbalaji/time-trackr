@@ -17,5 +17,26 @@ export function createMockSupabaseClient() {
       })),
     },
     from: vi.fn(),
+    rpc: vi.fn(),
+    functions: {
+      invoke: vi.fn(),
+    },
   }
+}
+
+// A chainable query-builder mock for `.from(...).select().eq().single()`-style
+// calls. Every method (other than the awaited terminal one) returns `this`, so
+// tests can chain `.select().eq().maybeSingle()` regardless of call order; the
+// final resolved value is `result` for every terminal call (`single`,
+// `maybeSingle`, or awaiting the builder itself).
+export function createQueryBuilderMock(result: { data: unknown; error: unknown }) {
+  const builder: Record<string, ReturnType<typeof vi.fn>> = {}
+  const chainable = ["select", "insert", "update", "eq", "order", "limit"]
+  for (const method of chainable) {
+    builder[method] = vi.fn(() => builder)
+  }
+  builder.single = vi.fn(() => Promise.resolve(result))
+  builder.maybeSingle = vi.fn(() => Promise.resolve(result))
+  builder.then = vi.fn((resolve) => Promise.resolve(result).then(resolve))
+  return builder
 }

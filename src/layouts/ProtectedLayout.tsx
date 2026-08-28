@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react"
 import { NavLink, Outlet, useNavigate } from "react-router"
 import { toast } from "sonner"
 import {
+  ArrowLeftRight,
   BarChart3,
   Clock,
   FolderKanban,
@@ -24,6 +25,7 @@ import { ThemeProvider } from "@/app/providers/ThemeProvider"
 import { useTheme } from "@/hooks/use-theme"
 import { useLogout } from "@/features/auth/hooks/useLogout"
 import { useProfile } from "@/features/auth/hooks/useProfile"
+import { useCurrentOrganization } from "@/features/organizations/hooks/useCurrentOrganization"
 
 type NavItem = {
   label: string
@@ -38,7 +40,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Timesheets", icon: ListChecks },
   { label: "Reports", icon: BarChart3 },
   { label: "Team", icon: Users },
-  { label: "Settings", icon: Settings },
+  { label: "Settings", to: "/settings", icon: Settings },
 ]
 
 export function ProtectedLayout() {
@@ -127,6 +129,7 @@ function Sidebar({
 }) {
   const navigate = useNavigate()
   const { data: profile } = useProfile()
+  const currentOrganization = useCurrentOrganization()
   const logout = useLogout()
   const { theme, toggleTheme } = useTheme()
 
@@ -160,6 +163,28 @@ function Sidebar({
       </div>
 
       <Separator className="bg-sidebar-border" />
+
+      {currentOrganization && (
+        <>
+          <div className="flex items-center gap-2 px-4 py-3">
+            <span className="min-w-0 flex-1 truncate text-sm font-medium">
+              {currentOrganization.organization.name}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Switch organization"
+              onClick={() => {
+                onNavigate?.()
+                navigate("/select-organization")
+              }}
+            >
+              <ArrowLeftRight className="size-4" />
+            </Button>
+          </div>
+          <Separator className="bg-sidebar-border" />
+        </>
+      )}
 
       <nav className="flex flex-1 flex-col gap-0.5 p-3">
         {NAV_ITEMS.map((item) => {

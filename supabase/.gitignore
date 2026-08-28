@@ -1,0 +1,3 @@
+# Local Supabase CLI runtime state — machine-specific, rewritten on every command.
+.branches
+.temp

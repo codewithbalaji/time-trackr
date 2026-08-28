@@ -28,7 +28,12 @@ export function LoginForm() {
     login.mutate(values, {
       onSuccess: () => {
         toast.success("Signed in successfully.")
-        navigate("/")
+        // Always through the organization picker on a fresh login (even with
+        // just one org) — see docs/decisions/0003-multi-organization-selection.md.
+        // requireOrganization would otherwise send them here anyway once it
+        // sees no selection for this session, but going there directly skips
+        // an extra redirect hop.
+        navigate("/select-organization")
       },
     })
   }
