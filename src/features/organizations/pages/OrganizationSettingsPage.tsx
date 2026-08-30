@@ -1,13 +1,18 @@
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
 import { useCurrentOrganization } from "@/features/organizations/hooks/useCurrentOrganization"
+import { useHasPermission } from "@/features/roles/hooks/useHasPermission"
+import { TimeSettingsForm } from "@/features/organizations/components/TimeSettingsForm"
 
 export function OrganizationSettingsPage() {
   const membership = useCurrentOrganization()
+  const organizationId = membership?.organization.id
+  const canManageSettings = useHasPermission(organizationId, "organization.manage_settings")
 
   return (
     <div className="mx-auto max-w-3xl p-6 lg:p-10">
@@ -24,6 +29,20 @@ export function OrganizationSettingsPage() {
           </CardDescription>
         </CardHeader>
       </Card>
+
+      {canManageSettings && organizationId && membership && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Time settings</CardTitle>
+            <CardDescription>
+              Change time zone, when your day starts, and your preferred date and time format.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <TimeSettingsForm organizationId={organizationId} timeSettings={membership.organization} />
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

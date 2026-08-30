@@ -31,7 +31,19 @@ export function createMockSupabaseClient() {
 // `maybeSingle`, or awaiting the builder itself).
 export function createQueryBuilderMock(result: { data: unknown; error: unknown }) {
   const builder: Record<string, ReturnType<typeof vi.fn>> = {}
-  const chainable = ["select", "insert", "update", "delete", "eq", "not", "gte", "is", "order", "limit"]
+  const chainable = [
+    "select",
+    "insert",
+    "update",
+    "delete",
+    "eq",
+    "not",
+    "gte",
+    "lt",
+    "is",
+    "order",
+    "limit",
+  ]
   for (const method of chainable) {
     builder[method] = vi.fn(() => builder)
   }

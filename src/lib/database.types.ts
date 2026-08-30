@@ -231,22 +231,34 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string
+          date_format: string
+          day_start: string
           id: string
           name: string
+          time_format: string
+          timezone: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           created_by: string
+          date_format?: string
+          day_start?: string
           id?: string
           name: string
+          time_format?: string
+          timezone?: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           created_by?: string
+          date_format?: string
+          day_start?: string
           id?: string
           name?: string
+          time_format?: string
+          timezone?: string
           updated_at?: string
         }
         Relationships: []
@@ -509,6 +521,57 @@ export type Database = {
           },
         ]
       }
+      timesheets: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          period_end: string
+          period_start: string
+          status: string
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          period_end: string
+          period_start: string
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          period_end?: string
+          period_start?: string
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timesheets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheets_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -612,6 +675,46 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "time_entries"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      submit_timesheet: {
+        Args: { p_organization_id: string; p_period_start: string }
+        Returns: {
+          created_at: string
+          id: string
+          organization_id: string
+          period_end: string
+          period_start: string
+          status: string
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "timesheets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      withdraw_timesheet: {
+        Args: { p_organization_id: string; p_period_start: string }
+        Returns: {
+          created_at: string
+          id: string
+          organization_id: string
+          period_end: string
+          period_start: string
+          status: string
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "timesheets"
           isOneToOne: true
           isSetofReturn: false
         }

@@ -1,9 +1,14 @@
 import { Clock, Loader2 } from "lucide-react"
-import { format, isSameDay } from "date-fns"
+import { isSameDay } from "date-fns"
 
 import type { TimeEntry } from "@/features/time-tracking/services/time-entry.service"
 import { TimeEntryRow } from "@/features/time-tracking/components/TimeEntryRow"
 import { formatDuration } from "@/features/time-tracking/lib/format-duration"
+import {
+  formatOrgDayHeading,
+  type DateFormat,
+  type TimeFormat,
+} from "@/features/organizations/lib/date-time-format"
 
 type DayGroup = {
   dateKey: string
@@ -18,12 +23,16 @@ export function TimeEntriesList({
   organizationId,
   userId,
   onRestart,
+  dateFormat,
+  timeFormat,
 }: {
   entries: TimeEntry[]
   isLoading: boolean
   organizationId: string
   userId: string
   onRestart: (entry: TimeEntry) => void
+  dateFormat: DateFormat
+  timeFormat: TimeFormat
 }) {
   if (isLoading) {
     return (
@@ -55,7 +64,7 @@ export function TimeEntriesList({
       {groupByDay(entries).map((group) => (
         <div key={group.dateKey}>
           <div className="mb-2 flex items-center justify-between text-sm">
-            <span className="font-medium">{format(group.date, "EEEE, MMM d")}</span>
+            <span className="font-medium">{formatOrgDayHeading(group.date, dateFormat)}</span>
             <span className="text-muted-foreground">{formatDuration(group.totalSeconds)}</span>
           </div>
           <div className="flex flex-col gap-2">
@@ -65,6 +74,7 @@ export function TimeEntriesList({
                 entry={entry}
                 organizationId={organizationId}
                 userId={userId}
+                timeFormat={timeFormat}
                 onRestart={() => onRestart(entry)}
               />
             ))}

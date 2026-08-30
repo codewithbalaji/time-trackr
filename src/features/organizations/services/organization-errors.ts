@@ -21,6 +21,8 @@ const ORGANIZATION_ERROR_MESSAGES: Record<string, string> = {
   only_owner_can_manage_owner_role: "Only an owner can grant or remove the Owner role.",
   cannot_remove_last_owner: "This organization needs at least one owner — promote someone else first.",
   already_a_member: "You're already a member of this organization. If your account was suspended, ask an admin to reactivate you from the Members page.",
+  invalid_timezone: "That's not a recognized timezone.",
+  "23514": "That value isn't valid.",
 }
 
 export function mapOrganizationError(error: Pick<PostgrestError, "message" | "code">): string {

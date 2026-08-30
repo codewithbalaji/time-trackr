@@ -15,17 +15,23 @@ const { requireOrganization, redirectIfOnboarded, requireMemberships } = await i
   "@/features/organizations/lib/route-guards"
 )
 
+const DEFAULT_TIME_SETTINGS = {
+  timezone: "UTC",
+  date_format: "MM/DD/YYYY" as const,
+  time_format: "24h" as const,
+  day_start: "00:00",
+}
 const ORG_A = {
   id: "m-1",
   role: { id: "r-1", name: "Owner" },
   status: "active" as const,
-  organization: { id: "org-1", name: "Acme" },
+  organization: { id: "org-1", name: "Acme", ...DEFAULT_TIME_SETTINGS },
 }
 const ORG_B = {
   id: "m-2",
   role: { id: "r-2", name: "Member" },
   status: "active" as const,
-  organization: { id: "org-2", name: "Widgets Co" },
+  organization: { id: "org-2", name: "Widgets Co", ...DEFAULT_TIME_SETTINGS },
 }
 
 function isRedirectTo(error: unknown, path: string) {

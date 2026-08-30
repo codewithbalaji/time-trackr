@@ -17,11 +17,11 @@ import { timeEntrySchema, type TimeEntryInput } from "@/features/time-tracking/s
 import { useProjects } from "@/features/projects/hooks/useProjects"
 import { useCreateManualEntry } from "@/features/time-tracking/hooks/useCreateManualEntry"
 
-function defaultValues(): TimeEntryInput {
+function defaultValues(initialProjectId?: string, initialDate?: string): TimeEntryInput {
   return {
     description: "",
-    projectId: "",
-    date: format(new Date(), "yyyy-MM-dd"),
+    projectId: initialProjectId ?? "",
+    date: initialDate ?? format(new Date(), "yyyy-MM-dd"),
     startTime: "",
     endTime: "",
     isRunning: false,
@@ -32,10 +32,16 @@ export function ManualEntryForm({
   organizationId,
   userId,
   onCreated,
+  initialProjectId,
+  initialDate,
 }: {
   organizationId: string
   userId: string
   onCreated?: () => void
+  // Lets a caller (e.g. Timesheets' day-cell dialog) pre-scope the form to a
+  // known project/day instead of always starting blank.
+  initialProjectId?: string
+  initialDate?: string
 }) {
   const { data: projects } = useProjects(organizationId)
   const activeProjects = projects?.filter((project) => project.status === "active") ?? []
@@ -43,7 +49,7 @@ export function ManualEntryForm({
 
   const form = useForm<TimeEntryInput>({
     resolver: zodResolver(timeEntrySchema),
-    defaultValues: defaultValues(),
+    defaultValues: defaultValues(initialProjectId, initialDate),
   })
 
   function onSubmit(values: TimeEntryInput) {
@@ -59,7 +65,7 @@ export function ManualEntryForm({
       {
         onSuccess: () => {
           toast.success("Time entry added.")
-          form.reset(defaultValues())
+          form.reset(defaultValues(initialProjectId, initialDate))
           onCreated?.()
         },
       }

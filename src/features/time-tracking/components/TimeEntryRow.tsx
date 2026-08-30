@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { format } from "date-fns"
 import { MoreHorizontal, Play } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -23,17 +22,25 @@ import type { TimeEntry } from "@/features/time-tracking/services/time-entry.ser
 import { useDeleteTimeEntry } from "@/features/time-tracking/hooks/useDeleteTimeEntry"
 import { EditTimeEntryDialog } from "@/features/time-tracking/components/EditTimeEntryDialog"
 import { formatDuration } from "@/features/time-tracking/lib/format-duration"
+import { formatOrgTime, type TimeFormat } from "@/features/organizations/lib/date-time-format"
 
 export function TimeEntryRow({
   entry,
   organizationId,
   userId,
   onRestart,
+  timeFormat,
+  locked = false,
 }: {
   entry: TimeEntry
   organizationId: string
   userId: string
   onRestart: () => void
+  timeFormat: TimeFormat
+  // True once this entry's week has been submitted (see the Timesheets
+  // feature) — hides the actions the database's lock trigger would reject
+  // anyway, rather than letting them fail with a toast.
+  locked?: boolean
 }) {
   const deleteEntry = useDeleteTimeEntry(organizationId, userId)
   const [editing, setEditing] = useState(false)
@@ -51,29 +58,33 @@ export function TimeEntryRow({
         <p className="truncate text-xs text-muted-foreground">{entry.project.name}</p>
       </div>
       <span className="hidden shrink-0 text-sm text-muted-foreground sm:inline">
-        {format(new Date(entry.start_time), "HH:mm")}
+        {formatOrgTime(new Date(entry.start_time), timeFormat)}
         {" – "}
-        {entry.end_time ? format(new Date(entry.end_time), "HH:mm") : "—"}
+        {entry.end_time ? formatOrgTime(new Date(entry.end_time), timeFormat) : "—"}
       </span>
       <span className="w-20 shrink-0 text-right font-mono text-sm tabular-nums">
         {formatDuration(entry.duration_seconds ?? 0)}
       </span>
-      <Button variant="ghost" size="icon-sm" aria-label="Restart timer" onClick={onRestart}>
-        <Play className="size-4" />
-      </Button>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon-sm" aria-label="Entry actions">
-            <MoreHorizontal className="size-4" />
+      {!locked && (
+        <>
+          <Button variant="ghost" size="icon-sm" aria-label="Restart timer" onClick={onRestart}>
+            <Play className="size-4" />
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => setEditing(true)}>Edit</DropdownMenuItem>
-          <DropdownMenuItem variant="destructive" onClick={() => setConfirmingDelete(true)}>
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon-sm" aria-label="Entry actions">
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setEditing(true)}>Edit</DropdownMenuItem>
+              <DropdownMenuItem variant="destructive" onClick={() => setConfirmingDelete(true)}>
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      )}
 
       <EditTimeEntryDialog
         entry={editing ? entry : null}

@@ -13,6 +13,8 @@ import type { TimeEntry } from "@/features/time-tracking/services/time-entry.ser
 export function TimeTrackerPage() {
   const membership = useCurrentOrganization()
   const organizationId = membership?.organization.id
+  const dateFormat = membership?.organization.date_format
+  const timeFormat = membership?.organization.time_format
   const userId = useAuthStore((state) => state.session?.user.id)
   const { data: entries, isLoading, isError } = useTimeEntries(organizationId, userId)
   const startTimer = useStartTimer(organizationId, userId)
@@ -69,6 +71,8 @@ export function TimeTrackerPage() {
               isLoading={isLoading}
               organizationId={organizationId!}
               userId={userId!}
+              dateFormat={dateFormat!}
+              timeFormat={timeFormat!}
               onRestart={handleRestart}
             />
           )}

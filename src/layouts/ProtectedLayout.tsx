@@ -52,7 +52,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Time Tracking", to: "/time-tracking", icon: Clock, showRunningTimer: true },
   { label: "Projects", to: "/projects", icon: FolderKanban },
   { label: "Clients", to: "/clients", icon: Building2 },
-  { label: "Timesheets", icon: ListChecks },
+  { label: "Timesheets", to: "/timesheets", icon: ListChecks },
   { label: "Reports", icon: BarChart3 },
   { label: "Team", to: "/members", icon: Users },
   {

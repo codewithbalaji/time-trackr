@@ -5,6 +5,7 @@ const TIME_ENTRY_ERROR_MESSAGES: Record<string, string> = {
   "23514": "End time must be after start time.",
   "42501": "You don't have permission to do that.",
   "project does not belong to the entry's organization": "Select a project from your organization.",
+  time_entry_locked: "This entry belongs to a submitted timesheet. Withdraw it to make changes.",
 }
 
 export function mapTimeEntryError(error: Pick<PostgrestError, "message" | "code">): string {
