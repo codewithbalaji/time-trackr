@@ -26,8 +26,13 @@ import { ThemeProvider } from "@/app/providers/ThemeProvider"
 import { useTheme } from "@/hooks/use-theme"
 import { useLogout } from "@/features/auth/hooks/useLogout"
 import { useProfile } from "@/features/auth/hooks/useProfile"
+import { useAuthStore } from "@/features/auth/stores/authStore"
 import { useCurrentOrganization } from "@/features/organizations/hooks/useCurrentOrganization"
 import { useHasPermission } from "@/features/roles/hooks/useHasPermission"
+import { useRunningTimeEntry } from "@/features/time-tracking/hooks/useRunningTimeEntry"
+import { useElapsedSeconds } from "@/features/time-tracking/hooks/useElapsedSeconds"
+import { formatDuration } from "@/features/time-tracking/lib/format-duration"
+import type { TimeEntry } from "@/features/time-tracking/services/time-entry.service"
 
 type NavItem = {
   label: string
@@ -37,11 +42,14 @@ type NavItem = {
   // this just keeps the nav from linking a plain Member to a page that will
   // immediately bounce them back to "/" with no explanation.
   permissionKey?: string
+  // Swaps the label for the live elapsed time while a timer is running (see
+  // the Sidebar component) — matches the reference screenshot's behavior.
+  showRunningTimer?: boolean
 }
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", to: "/", icon: LayoutDashboard },
-  { label: "Time Tracking", icon: Clock },
+  { label: "Time Tracking", to: "/time-tracking", icon: Clock, showRunningTimer: true },
   { label: "Projects", to: "/projects", icon: FolderKanban },
   { label: "Clients", to: "/clients", icon: Building2 },
   { label: "Timesheets", icon: ListChecks },
@@ -63,9 +71,15 @@ export function ProtectedLayout() {
   )
 }
 
+const DEFAULT_DOCUMENT_TITLE = "time-tracker"
+
 function ProtectedShell() {
   const { theme } = useTheme()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const currentOrganization = useCurrentOrganization()
+  const userId = useAuthStore((state) => state.session?.user.id)
+  const { data: runningEntry } = useRunningTimeEntry(currentOrganization?.organization.id, userId)
+  const elapsedSeconds = useElapsedSeconds(runningEntry?.start_time)
 
   useEffect(() => {
     if (!mobileNavOpen) return
@@ -76,6 +90,17 @@ function ProtectedShell() {
     return () => window.removeEventListener("keydown", onKeyDown)
   }, [mobileNavOpen])
 
+  // Mirrors the reference screenshot's tab-title behavior: the browser tab
+  // shows the live elapsed time only while a timer is running, elsewhere.
+  useEffect(() => {
+    document.title = runningEntry
+      ? `${formatDuration(elapsedSeconds)} · ${DEFAULT_DOCUMENT_TITLE}`
+      : DEFAULT_DOCUMENT_TITLE
+    return () => {
+      document.title = DEFAULT_DOCUMENT_TITLE
+    }
+  }, [runningEntry, elapsedSeconds])
+
   return (
     <div
       className={cn(
@@ -83,7 +108,7 @@ function ProtectedShell() {
         theme === "dark" && "dark"
       )}
     >
-      <Sidebar className="hidden lg:flex" />
+      <Sidebar className="hidden lg:flex" runningEntry={runningEntry} elapsedSeconds={elapsedSeconds} />
 
       {mobileNavOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
@@ -95,6 +120,8 @@ function ProtectedShell() {
           <Sidebar
             className="absolute inset-y-0 left-0 flex w-72"
             onNavigate={() => setMobileNavOpen(false)}
+            runningEntry={runningEntry}
+            elapsedSeconds={elapsedSeconds}
             trailingAction={
               <Button
                 variant="ghost"
@@ -134,10 +161,14 @@ function Sidebar({
   className,
   onNavigate,
   trailingAction,
+  runningEntry,
+  elapsedSeconds,
 }: {
   className?: string
   onNavigate?: () => void
   trailingAction?: ReactNode
+  runningEntry: TimeEntry | null | undefined
+  elapsedSeconds: number
 }) {
   const navigate = useNavigate()
   const { data: profile } = useProfile()
@@ -242,7 +273,9 @@ function Sidebar({
               }
             >
               <Icon className="size-4" />
-              {item.label}
+              {item.showRunningTimer && runningEntry
+                ? formatDuration(elapsedSeconds)
+                : item.label}
             </NavLink>
           )
         })}

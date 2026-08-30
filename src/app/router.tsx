@@ -22,6 +22,7 @@ import { MembersPage } from "@/features/users/pages/MembersPage"
 import { ProfilePage } from "@/features/users/pages/ProfilePage"
 import { ClientsPage } from "@/features/clients/pages/ClientsPage"
 import { ProjectsPage } from "@/features/projects/pages/ProjectsPage"
+import { TimeTrackerPage } from "@/features/time-tracking/pages/TimeTrackerPage"
 import { DashboardPage } from "@/pages/DashboardPage"
 
 export const router = createBrowserRouter([
@@ -47,6 +48,7 @@ export const router = createBrowserRouter([
     loader: requireOrganization,
     children: [
       { path: "/", element: <DashboardPage /> },
+      { path: "/time-tracking", element: <TimeTrackerPage /> },
       { path: "/clients", element: <ClientsPage /> },
       { path: "/projects", element: <ProjectsPage /> },
       { path: "/members", element: <MembersPage /> },

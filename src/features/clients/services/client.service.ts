@@ -14,7 +14,7 @@ export async function listClients(organizationId: string): Promise<Client[]> {
     .eq("organization_id", organizationId)
     .order("name", { ascending: true })
   if (error) throw error
-  return data
+  return data as unknown as Client[]
 }
 
 export async function createClient(input: {
