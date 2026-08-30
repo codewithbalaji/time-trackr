@@ -59,7 +59,7 @@ export function SelectOrganizationPage() {
                 <span className="flex-1 truncate font-medium">
                   {membership.organization.name}
                 </span>
-                <span className="rounded-full border border-border px-1.5 py-0.5 text-[0.65rem] tracking-wide text-muted-foreground uppercase">
+                <span className="rounded-full border border-border px-1.5 py-0.5 text-xs tracking-wide text-muted-foreground uppercase">
                   {membership.role.name}
                 </span>
               </button>

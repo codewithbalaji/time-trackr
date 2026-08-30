@@ -4,6 +4,7 @@ import { toast } from "sonner"
 import {
   ArrowLeftRight,
   BarChart3,
+  Building2,
   Clock,
   FolderKanban,
   LayoutDashboard,
@@ -41,7 +42,8 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", to: "/", icon: LayoutDashboard },
   { label: "Time Tracking", icon: Clock },
-  { label: "Projects", icon: FolderKanban },
+  { label: "Projects", to: "/projects", icon: FolderKanban },
+  { label: "Clients", to: "/clients", icon: Building2 },
   { label: "Timesheets", icon: ListChecks },
   { label: "Reports", icon: BarChart3 },
   { label: "Team", to: "/members", icon: Users },
@@ -217,7 +219,7 @@ function Sidebar({
                   <Icon className="size-4" />
                   {item.label}
                 </span>
-                <span className="rounded-full border border-sidebar-border px-1.5 py-0.5 text-[0.65rem] tracking-wide text-sidebar-foreground/40 uppercase">
+                <span className="rounded-full border border-sidebar-border px-1.5 py-0.5 text-xs tracking-wide text-sidebar-foreground/40 uppercase">
                   Soon
                 </span>
               </div>

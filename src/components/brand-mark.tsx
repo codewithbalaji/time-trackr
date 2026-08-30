@@ -9,7 +9,7 @@ export function BrandMark({ className }: { className?: string }) {
   return (
     <div
       className={cn("inline-flex w-fit shrink-0 items-center rounded-md px-2.5 py-1", className)}
-      style={{ backgroundColor: "oklch(0.15 0.008 235)" }}
+      style={{ backgroundColor: "oklch(0.08 0.004 240)" }}
     >
       <img src={logo} alt="Time Trackr" className="h-9 w-auto" />
     </div>

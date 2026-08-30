@@ -1,7 +1,8 @@
 // Hand-written to match supabase/migrations/20260826052413_create_profiles.sql,
 // supabase/migrations/20260827135646_create_organizations.sql,
-// supabase/migrations/20260829090000_phase3_member_management_rls.sql, and
-// supabase/migrations/20260830120000_phase4_rbac.sql.
+// supabase/migrations/20260829090000_phase3_member_management_rls.sql,
+// supabase/migrations/20260830120000_phase4_rbac.sql, and
+// supabase/migrations/20260904090000_phase5_clients_and_projects.sql.
 // Regenerate with `supabase gen types typescript --linked > src/lib/database.types.ts`
 // once the migrations have been applied to a reachable database, and replace this file.
 
@@ -285,6 +286,134 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          id: string
+          organization_id: string
+          name: string
+          status: "active" | "archived"
+          created_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          organization_id: string
+          name: string
+          status?: "active" | "archived"
+          created_by: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          name?: string
+          status?: "active" | "archived"
+          created_by?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          id: string
+          organization_id: string
+          client_id: string | null
+          name: string
+          color: string
+          description: string | null
+          status: "active" | "archived"
+          created_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          organization_id: string
+          client_id?: string | null
+          name: string
+          color?: string
+          description?: string | null
+          status?: "active" | "archived"
+          created_by: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          client_id?: string | null
+          name?: string
+          color?: string
+          description?: string | null
+          status?: "active" | "archived"
+          created_by?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_members: {
+        Row: {
+          id: string
+          project_id: string
+          user_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          user_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          user_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_members_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

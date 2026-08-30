@@ -20,6 +20,8 @@ import { SelectOrganizationPage } from "@/features/organizations/pages/SelectOrg
 import { OrganizationSettingsPage } from "@/features/organizations/pages/OrganizationSettingsPage"
 import { MembersPage } from "@/features/users/pages/MembersPage"
 import { ProfilePage } from "@/features/users/pages/ProfilePage"
+import { ClientsPage } from "@/features/clients/pages/ClientsPage"
+import { ProjectsPage } from "@/features/projects/pages/ProjectsPage"
 import { DashboardPage } from "@/pages/DashboardPage"
 
 export const router = createBrowserRouter([
@@ -45,6 +47,8 @@ export const router = createBrowserRouter([
     loader: requireOrganization,
     children: [
       { path: "/", element: <DashboardPage /> },
+      { path: "/clients", element: <ClientsPage /> },
+      { path: "/projects", element: <ProjectsPage /> },
       { path: "/members", element: <MembersPage /> },
       { path: "/profile", element: <ProfilePage /> },
       {

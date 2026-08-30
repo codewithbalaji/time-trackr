@@ -37,8 +37,8 @@ function Glow() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute top-1/2 left-1/2 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-[0.18] blur-[110px]"
-      style={{ backgroundColor: "oklch(0.5 0.1 195)" }}
+      className="pointer-events-none absolute top-1/2 left-1/2 h-[38rem] w-[38rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-[0.18] blur-[124px]"
+      style={{ backgroundColor: "oklch(0.58 0.18 255)" }}
     />
   )
 }
@@ -76,7 +76,7 @@ function LedgerRows() {
             width: row.width,
             maxWidth: "24rem",
             backgroundColor: row.accent
-              ? "oklch(0.72 0.12 195 / 65%)"
+              ? "oklch(0.7 0.16 255 / 65%)"
               : "oklch(1 0 0 / 12%)",
           }}
         />
