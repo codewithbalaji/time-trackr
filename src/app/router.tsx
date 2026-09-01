@@ -28,6 +28,7 @@ import { ApprovalsPage } from "@/features/approvals/pages/ApprovalsPage"
 import { NotificationsPage } from "@/features/notifications/pages/NotificationsPage"
 import { DashboardPage } from "@/features/reports/pages/DashboardPage"
 import { ReportsPage } from "@/features/reports/pages/ReportsPage"
+import { AuditLogPage } from "@/features/audit/pages/AuditLogPage"
 
 export const router = createBrowserRouter([
   {
@@ -65,6 +66,11 @@ export const router = createBrowserRouter([
       { path: "/notifications", element: <NotificationsPage /> },
       { path: "/members", element: <MembersPage /> },
       { path: "/profile", element: <ProfilePage /> },
+      {
+        path: "/audit-log",
+        element: <AuditLogPage />,
+        loader: requirePermission("audit_logs.view"),
+      },
       {
         path: "/settings",
         element: <OrganizationSettingsPage />,

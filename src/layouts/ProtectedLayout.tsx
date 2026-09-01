@@ -14,6 +14,7 @@ import {
   LogOut,
   Menu,
   Moon,
+  ScrollText,
   Settings,
   Sun,
   Users,
@@ -66,6 +67,12 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Reports", to: "/reports", icon: BarChart3 },
   { label: "Notifications", to: "/notifications", icon: Bell },
   { label: "Team", to: "/members", icon: Users },
+  {
+    label: "Audit Log",
+    to: "/audit-log",
+    icon: ScrollText,
+    permissionKey: "audit_logs.view",
+  },
   {
     label: "Settings",
     to: "/settings",
@@ -193,9 +200,14 @@ function Sidebar({
     currentOrganization?.organization.id,
     "timesheets.approve"
   )
+  const canViewAuditLog = useHasPermission(
+    currentOrganization?.organization.id,
+    "audit_logs.view"
+  )
   const grantedPermissions: Record<string, boolean> = {
     "organization.manage_settings": canManageSettings,
     "timesheets.approve": canApproveTimesheets,
+    "audit_logs.view": canViewAuditLog,
   }
   const logout = useLogout()
   const { theme, toggleTheme } = useTheme()
