@@ -60,7 +60,7 @@ const NAV_ITEMS: NavItem[] = [
     icon: ClipboardCheck,
     permissionKey: "timesheets.approve",
   },
-  { label: "Reports", icon: BarChart3 },
+  { label: "Reports", to: "/reports", icon: BarChart3 },
   { label: "Team", to: "/members", icon: Users },
   {
     label: "Settings",

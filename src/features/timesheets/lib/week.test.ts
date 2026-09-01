@@ -4,6 +4,7 @@ import {
   formatWeekRange,
   getEntryDateKey,
   getPeriodUtcBounds,
+  getRangeUtcBounds,
   getWeekDays,
   getWeekStart,
   shiftWeek,
@@ -73,5 +74,25 @@ describe("getPeriodUtcBounds", () => {
     const { startIso, endIso } = getPeriodUtcBounds("2026-08-24", "America/New_York")
     expect(startIso).toBe("2026-08-24T04:00:00.000Z")
     expect(endIso).toBe("2026-08-31T04:00:00.000Z")
+  })
+})
+
+describe("getRangeUtcBounds", () => {
+  it("returns an arbitrary-length UTC range, end exclusive of the day after endKeyInclusive", () => {
+    const { startIso, endIso } = getRangeUtcBounds("2026-08-01", "2026-08-31", "America/New_York")
+    expect(startIso).toBe("2026-08-01T04:00:00.000Z")
+    expect(endIso).toBe("2026-09-01T04:00:00.000Z")
+  })
+
+  it("matches getPeriodUtcBounds for a same 7-day span", () => {
+    const range = getRangeUtcBounds("2026-08-24", "2026-08-30", "America/New_York")
+    const period = getPeriodUtcBounds("2026-08-24", "America/New_York")
+    expect(range).toEqual(period)
+  })
+
+  it("handles a single-day range", () => {
+    const { startIso, endIso } = getRangeUtcBounds("2026-08-27", "2026-08-27", "UTC")
+    expect(startIso).toBe("2026-08-27T00:00:00.000Z")
+    expect(endIso).toBe("2026-08-28T00:00:00.000Z")
   })
 })

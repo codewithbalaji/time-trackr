@@ -55,6 +55,26 @@ export function getPeriodUtcBounds(
   }
 }
 
+// Same UTC-instant-bounds pattern as getPeriodUtcBounds, generalized past a
+// fixed 7-day week to an arbitrary [startKey, endKeyInclusive] range — used
+// by src/features/reports for report date ranges. endKeyInclusive is the
+// last calendar day *included* in the range (e.g. "This month"'s last day),
+// so the returned endIso is that day's exclusive upper bound.
+export function getRangeUtcBounds(
+  startKey: string,
+  endKeyInclusive: string,
+  timezone: string
+): { startIso: string; endIso: string } {
+  const [startYear, startMonth, startDay] = startKey.split("-").map(Number)
+  const [endYear, endMonth, endDay] = endKeyInclusive.split("-").map(Number)
+  const start = new TZDate(startYear, startMonth - 1, startDay, timezone)
+  const endExclusive = new TZDate(endYear, endMonth - 1, endDay, timezone)
+  return {
+    startIso: new Date(start.getTime()).toISOString(),
+    endIso: new Date(addDays(endExclusive, 1).getTime()).toISOString(),
+  }
+}
+
 function parseDateKey(dateKey: string): Date {
   return new Date(`${dateKey}T00:00:00`)
 }

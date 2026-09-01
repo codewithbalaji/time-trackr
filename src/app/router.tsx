@@ -25,7 +25,8 @@ import { ProjectsPage } from "@/features/projects/pages/ProjectsPage"
 import { TimeTrackerPage } from "@/features/time-tracking/pages/TimeTrackerPage"
 import { TimesheetsPage } from "@/features/timesheets/pages/TimesheetsPage"
 import { ApprovalsPage } from "@/features/approvals/pages/ApprovalsPage"
-import { DashboardPage } from "@/pages/DashboardPage"
+import { DashboardPage } from "@/features/reports/pages/DashboardPage"
+import { ReportsPage } from "@/features/reports/pages/ReportsPage"
 
 export const router = createBrowserRouter([
   {
@@ -59,6 +60,7 @@ export const router = createBrowserRouter([
       },
       { path: "/clients", element: <ClientsPage /> },
       { path: "/projects", element: <ProjectsPage /> },
+      { path: "/reports", element: <ReportsPage /> },
       { path: "/members", element: <MembersPage /> },
       { path: "/profile", element: <ProfilePage /> },
       {
