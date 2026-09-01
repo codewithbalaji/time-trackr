@@ -118,9 +118,18 @@ Required variables:
 VITE_SUPABASE_URL=
 VITE_SUPABASE_PUBLISHABLE_KEY=
 
+Optional:
+
+VITE_SENTRY_DSN= (enables error tracking in production builds — see docs/deployment.md)
+
 Never commit .env.
 
 Use .env.example as the template for required environment variables.
+
+The Supabase project referenced in the team's shared config is production (see
+docs/decisions/0010-phase13-production-readiness.md) — point your local .env at
+your own local Supabase stack instead (docs/supabase-cli-workflow.md's
+`supabase start`), not the production URL/keys.
 
 Development
 

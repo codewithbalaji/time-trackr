@@ -60,7 +60,7 @@ export function CreateProjectForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
         <div className="flex items-start gap-3">
           <FormField
             control={form.control}

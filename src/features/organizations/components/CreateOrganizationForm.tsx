@@ -34,7 +34,7 @@ export function CreateOrganizationForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-start gap-3">
+      <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="flex items-start gap-3">
         <FormField
           control={form.control}
           name="organizationName"

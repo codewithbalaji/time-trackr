@@ -71,7 +71,7 @@ export function InviteAcceptForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="grid gap-4">
         <div className="grid gap-1.5">
           <span className="text-sm font-medium">Email</span>
           <p className="text-sm text-muted-foreground">{email}</p>
