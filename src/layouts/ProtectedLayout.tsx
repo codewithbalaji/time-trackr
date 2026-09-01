@@ -4,6 +4,7 @@ import { toast } from "sonner"
 import {
   ArrowLeftRight,
   BarChart3,
+  Bell,
   Building2,
   ClipboardCheck,
   Clock,
@@ -34,6 +35,8 @@ import { useRunningTimeEntry } from "@/features/time-tracking/hooks/useRunningTi
 import { useElapsedSeconds } from "@/features/time-tracking/hooks/useElapsedSeconds"
 import { formatDuration } from "@/features/time-tracking/lib/format-duration"
 import type { TimeEntry } from "@/features/time-tracking/services/time-entry.service"
+import { useNotificationsRealtime } from "@/features/notifications/hooks/useNotificationsRealtime"
+import { NotificationBell } from "@/features/notifications/components/NotificationBell"
 
 type NavItem = {
   label: string
@@ -61,6 +64,7 @@ const NAV_ITEMS: NavItem[] = [
     permissionKey: "timesheets.approve",
   },
   { label: "Reports", to: "/reports", icon: BarChart3 },
+  { label: "Notifications", to: "/notifications", icon: Bell },
   { label: "Team", to: "/members", icon: Users },
   {
     label: "Settings",
@@ -87,6 +91,7 @@ function ProtectedShell() {
   const userId = useAuthStore((state) => state.session?.user.id)
   const { data: runningEntry } = useRunningTimeEntry(currentOrganization?.organization.id, userId)
   const elapsedSeconds = useElapsedSeconds(runningEntry?.start_time)
+  useNotificationsRealtime(currentOrganization?.organization.id, userId)
 
   useEffect(() => {
     if (!mobileNavOpen) return
@@ -111,7 +116,7 @@ function ProtectedShell() {
   return (
     <div
       className={cn(
-        "flex min-h-svh bg-background text-foreground",
+        "flex h-svh overflow-hidden bg-background text-foreground",
         theme === "dark" && "dark"
       )}
     >
@@ -143,8 +148,8 @@ function ProtectedShell() {
         </div>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center gap-3 border-b border-sidebar-border px-4 lg:hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-sidebar-border px-4 lg:hidden">
           <Button
             variant="ghost"
             size="icon-sm"
@@ -156,7 +161,7 @@ function ProtectedShell() {
           <BrandMark />
         </header>
 
-        <main className="flex-1 overflow-y-auto">
+        <main className="min-h-0 flex-1 overflow-y-auto">
           <Outlet />
         </main>
       </div>
@@ -251,7 +256,7 @@ function Sidebar({
         </>
       )}
 
-      <nav className="flex flex-1 flex-col gap-0.5 p-3">
+      <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto p-3">
         {visibleNavItems.map((item) => {
           const Icon = item.icon
 
@@ -310,6 +315,7 @@ function Sidebar({
             {profile?.email}
           </p>
         </div>
+        <NotificationBell organizationId={currentOrganization?.organization.id} />
         <Button
           variant="ghost"
           size="icon-sm"

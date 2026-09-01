@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       audit_logs: {
@@ -221,6 +196,76 @@ export type Database = {
           {
             foreignKeyName: "memberships_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          actor_id: string | null
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          metadata: Json
+          organization_id: string
+          read_at: string | null
+          recipient_id: string
+          target_id: string | null
+          target_type: string
+          title: string
+          type: string
+        }
+        Insert: {
+          actor_id?: string | null
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          metadata?: Json
+          organization_id: string
+          read_at?: string | null
+          recipient_id: string
+          target_id?: string | null
+          target_type: string
+          title: string
+          type: string
+        }
+        Update: {
+          actor_id?: string | null
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          metadata?: Json
+          organization_id?: string
+          read_at?: string | null
+          recipient_id?: string
+          target_id?: string | null
+          target_type?: string
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -660,6 +705,41 @@ export type Database = {
         Args: { p_membership_id: string }
         Returns: boolean
       }
+      create_notification: {
+        Args: {
+          p_actor_id: string
+          p_body: string
+          p_link: string
+          p_metadata?: Json
+          p_organization_id: string
+          p_recipient_id: string
+          p_target_id: string
+          p_target_type: string
+          p_title: string
+          p_type: string
+        }
+        Returns: {
+          actor_id: string | null
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          metadata: Json
+          organization_id: string
+          read_at: string | null
+          recipient_id: string
+          target_id: string | null
+          target_type: string
+          title: string
+          type: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "notifications"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_organization_with_owner: {
         Args: { p_name: string }
         Returns: {
@@ -759,6 +839,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      run_timesheet_reminders: { Args: never; Returns: undefined }
       shares_org_with: { Args: { p_user_id: string }; Returns: boolean }
       start_time_entry: {
         Args: {
@@ -959,9 +1040,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },
