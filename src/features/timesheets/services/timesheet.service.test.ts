@@ -6,9 +6,13 @@ const mockSupabase = createMockSupabaseClient()
 
 vi.mock("@/lib/supabase", () => ({ supabase: mockSupabase }))
 
-const { getTimesheet, listEntriesForPeriod, submitTimesheet, withdrawTimesheet } = await import(
-  "@/features/timesheets/services/timesheet.service"
-)
+const {
+  getTimesheet,
+  listEntriesForPeriod,
+  submitTimesheet,
+  withdrawTimesheet,
+  resubmitTimesheet,
+} = await import("@/features/timesheets/services/timesheet.service")
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -90,5 +94,27 @@ describe("withdrawTimesheet", () => {
       p_period_start: "2026-08-24",
     })
     expect(result).toEqual(timesheet)
+  })
+})
+
+describe("resubmitTimesheet", () => {
+  it("calls the resubmit_timesheet rpc", async () => {
+    const timesheet = { id: "ts-1", status: "submitted" }
+    mockSupabase.rpc.mockResolvedValue({ data: timesheet, error: null })
+
+    const result = await resubmitTimesheet("org-1", "2026-08-24")
+
+    expect(mockSupabase.rpc).toHaveBeenCalledWith("resubmit_timesheet", {
+      p_organization_id: "org-1",
+      p_period_start: "2026-08-24",
+    })
+    expect(result).toEqual(timesheet)
+  })
+
+  it("throws when the rpc fails", async () => {
+    const error = { message: "timesheet_not_rejected" }
+    mockSupabase.rpc.mockResolvedValue({ data: null, error })
+
+    await expect(resubmitTimesheet("org-1", "2026-08-24")).rejects.toEqual(error)
   })
 })

@@ -5,6 +5,7 @@ import {
   ArrowLeftRight,
   BarChart3,
   Building2,
+  ClipboardCheck,
   Clock,
   FolderKanban,
   LayoutDashboard,
@@ -53,6 +54,12 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Projects", to: "/projects", icon: FolderKanban },
   { label: "Clients", to: "/clients", icon: Building2 },
   { label: "Timesheets", to: "/timesheets", icon: ListChecks },
+  {
+    label: "Approvals",
+    to: "/approvals",
+    icon: ClipboardCheck,
+    permissionKey: "timesheets.approve",
+  },
   { label: "Reports", icon: BarChart3 },
   { label: "Team", to: "/members", icon: Users },
   {
@@ -177,10 +184,18 @@ function Sidebar({
     currentOrganization?.organization.id,
     "organization.manage_settings"
   )
+  const canApproveTimesheets = useHasPermission(
+    currentOrganization?.organization.id,
+    "timesheets.approve"
+  )
+  const grantedPermissions: Record<string, boolean> = {
+    "organization.manage_settings": canManageSettings,
+    "timesheets.approve": canApproveTimesheets,
+  }
   const logout = useLogout()
   const { theme, toggleTheme } = useTheme()
   const visibleNavItems = NAV_ITEMS.filter(
-    (item) => !item.permissionKey || canManageSettings
+    (item) => !item.permissionKey || grantedPermissions[item.permissionKey]
   )
 
   function handleLogout() {

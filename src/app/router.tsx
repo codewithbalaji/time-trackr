@@ -24,6 +24,7 @@ import { ClientsPage } from "@/features/clients/pages/ClientsPage"
 import { ProjectsPage } from "@/features/projects/pages/ProjectsPage"
 import { TimeTrackerPage } from "@/features/time-tracking/pages/TimeTrackerPage"
 import { TimesheetsPage } from "@/features/timesheets/pages/TimesheetsPage"
+import { ApprovalsPage } from "@/features/approvals/pages/ApprovalsPage"
 import { DashboardPage } from "@/pages/DashboardPage"
 
 export const router = createBrowserRouter([
@@ -51,6 +52,11 @@ export const router = createBrowserRouter([
       { path: "/", element: <DashboardPage /> },
       { path: "/time-tracking", element: <TimeTrackerPage /> },
       { path: "/timesheets", element: <TimesheetsPage /> },
+      {
+        path: "/approvals",
+        element: <ApprovalsPage />,
+        loader: requirePermission("timesheets.approve"),
+      },
       { path: "/clients", element: <ClientsPage /> },
       { path: "/projects", element: <ProjectsPage /> },
       { path: "/members", element: <MembersPage /> },

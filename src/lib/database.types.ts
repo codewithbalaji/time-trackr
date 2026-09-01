@@ -528,6 +528,9 @@ export type Database = {
           organization_id: string
           period_end: string
           period_start: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           status: string
           submitted_at: string | null
           updated_at: string
@@ -539,6 +542,9 @@ export type Database = {
           organization_id: string
           period_end: string
           period_start: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string
           submitted_at?: string | null
           updated_at?: string
@@ -550,6 +556,9 @@ export type Database = {
           organization_id?: string
           period_end?: string
           period_start?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string
           submitted_at?: string | null
           updated_at?: string
@@ -561,6 +570,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheets_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -595,6 +611,33 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      approve_timesheet: {
+        Args: {
+          p_organization_id: string
+          p_period_start: string
+          p_user_id: string
+        }
+        Returns: {
+          created_at: string
+          id: string
+          organization_id: string
+          period_end: string
+          period_start: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "timesheets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       assign_membership_role: {
         Args: { p_membership_id: string; p_role_id: string }
         Returns: {
@@ -622,8 +665,12 @@ export type Database = {
         Returns: {
           created_at: string
           created_by: string
+          date_format: string
+          day_start: string
           id: string
           name: string
+          time_format: string
+          timezone: string
           updated_at: string
         }
         SetofOptions: {
@@ -653,6 +700,65 @@ export type Database = {
       }
       is_org_member: { Args: { p_organization_id: string }; Returns: boolean }
       is_org_owner: { Args: { p_organization_id: string }; Returns: boolean }
+      is_time_entry_period_locked: {
+        Args: {
+          p_organization_id: string
+          p_start_time: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      reject_timesheet: {
+        Args: {
+          p_organization_id: string
+          p_period_start: string
+          p_reason: string
+          p_user_id: string
+        }
+        Returns: {
+          created_at: string
+          id: string
+          organization_id: string
+          period_end: string
+          period_start: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "timesheets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      resubmit_timesheet: {
+        Args: { p_organization_id: string; p_period_start: string }
+        Returns: {
+          created_at: string
+          id: string
+          organization_id: string
+          period_end: string
+          period_start: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "timesheets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       shares_org_with: { Args: { p_user_id: string }; Returns: boolean }
       start_time_entry: {
         Args: {
@@ -687,6 +793,9 @@ export type Database = {
           organization_id: string
           period_end: string
           period_start: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           status: string
           submitted_at: string | null
           updated_at: string
@@ -707,6 +816,9 @@ export type Database = {
           organization_id: string
           period_end: string
           period_start: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           status: string
           submitted_at: string | null
           updated_at: string

@@ -5,11 +5,14 @@ export type Timesheet = {
   id: string
   period_start: string
   period_end: string
-  status: "draft" | "submitted"
+  status: "draft" | "submitted" | "approved" | "rejected"
   submitted_at: string | null
+  reviewed_at: string | null
+  rejection_reason: string | null
 }
 
-const TIMESHEET_COLUMNS = "id, period_start, period_end, status, submitted_at"
+const TIMESHEET_COLUMNS =
+  "id, period_start, period_end, status, submitted_at, reviewed_at, rejection_reason"
 
 export async function getTimesheet(
   organizationId: string,
@@ -65,6 +68,18 @@ export async function withdrawTimesheet(
   periodStart: string
 ): Promise<Timesheet> {
   const { data, error } = await supabase.rpc("withdraw_timesheet", {
+    p_organization_id: organizationId,
+    p_period_start: periodStart,
+  })
+  if (error) throw error
+  return data as Timesheet
+}
+
+export async function resubmitTimesheet(
+  organizationId: string,
+  periodStart: string
+): Promise<Timesheet> {
+  const { data, error } = await supabase.rpc("resubmit_timesheet", {
     p_organization_id: organizationId,
     p_period_start: periodStart,
   })

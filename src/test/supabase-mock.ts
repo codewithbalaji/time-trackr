@@ -40,6 +40,7 @@ export function createQueryBuilderMock(result: { data: unknown; error: unknown }
     "not",
     "gte",
     "lt",
+    "in",
     "is",
     "order",
     "limit",

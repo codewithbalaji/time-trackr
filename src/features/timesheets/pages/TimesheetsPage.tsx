@@ -15,6 +15,7 @@ import { WeeklyTimesheetGrid } from "@/features/timesheets/components/WeeklyTime
 import { DailyTimesheetView } from "@/features/timesheets/components/DailyTimesheetView"
 import { DayEntriesDialog } from "@/features/timesheets/components/DayEntriesDialog"
 import { getEntryDateKey, getWeekDays, getWeekStart } from "@/features/timesheets/lib/week"
+import { ApprovalHistoryList } from "@/features/approvals/components/ApprovalHistoryList"
 
 type ViewMode = "weekly" | "daily"
 
@@ -54,7 +55,7 @@ export function TimesheetsPage() {
   } = useTimeEntriesForPeriod(organizationId, userId, periodStart, timezone)
 
   const status = timesheet?.status ?? "draft"
-  const locked = status === "submitted"
+  const locked = status === "submitted" || status === "approved"
   const days = periodStart ? getWeekDays(periodStart) : []
   const activeDate = selectedDate ?? days[0]
 
@@ -73,6 +74,7 @@ export function TimesheetsPage() {
             userId={userId}
             periodStart={periodStart}
             status={status}
+            rejectionReason={timesheet?.rejection_reason}
           />
         )}
       </div>
@@ -173,6 +175,17 @@ export function TimesheetsPage() {
           )}
         </CardContent>
       </Card>
+
+      {status === "rejected" && timesheet && (
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle>History</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ApprovalHistoryList timesheetId={timesheet.id} />
+          </CardContent>
+        </Card>
+      )}
 
       {selectedCell && organizationId && userId && timezone && dateFormat && timeFormat && (
         <DayEntriesDialog
