@@ -182,7 +182,10 @@ $$;
 grant execute on function public.resubmit_timesheet(uuid, date) to authenticated;
 
 -- Was missing: reviewers need to read another member's time entries to
--- drill into a submitted week in the review queue.
+-- drill into a submitted week in the review queue. Dropped and recreated
+-- because the identical policy already exists from the Phase 8 approvals
+-- migration — this statement is otherwise a no-op restating that policy.
+drop policy if exists "Members with timesheets.approve can view any time entries in their org" on public.time_entries;
 create policy "Members with timesheets.approve can view any time entries in their org"
   on public.time_entries for select
   using (public.has_permission(organization_id, 'timesheets.approve'));

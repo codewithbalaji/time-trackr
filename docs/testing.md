@@ -57,6 +57,14 @@ Especially:
 - Role-based access
 - Permission boundaries
 
+These run as real SQL against a real Postgres instance with RLS enabled — not
+mocks of the Supabase client — using pgTAP. Test files live in
+`supabase/tests/database/` (one file per concern) and run via `npm run
+test:rls` (`supabase test db`), which requires Docker and the local Supabase
+stack (`supabase start`). See ADR-0009 for the approach and conventions
+(fixtures run as `postgres` to bypass RLS, assertions run as `authenticated`
+with `request.jwt.claim.sub` set, each file is one rolled-back transaction).
+
 ## End-to-End Tests
 
 Use end-to-end tests for critical user journeys when the application reaches sufficient maturity.
