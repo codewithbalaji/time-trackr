@@ -8,7 +8,7 @@ The application is initially intended for internal company use, but the architec
 
 ## Objectives
 
-The application should provide a centralized system for:
+The application provides a centralized system for:
 
 - Employee time tracking
 - Projects
@@ -35,7 +35,7 @@ The application should provide a centralized system for:
 
 - Tailwind CSS
 - shadcn/ui
-- Lucide
+- Lucide Icons
 
 ### Forms
 
@@ -107,78 +107,130 @@ supabase/
 ├── migrations/
 ├── functions/
 └── seed/
+```
 
-Environment Variables
+---
 
-Create a .env file at the project root.
+## Environment Variables
 
-Required variables:
+Create a `.env` file at the project root using `.env.example` as a template:
 
-VITE_SUPABASE_URL=
-VITE_SUPABASE_PUBLISHABLE_KEY=
+```bash
+cp .env.example .env
+```
 
-Optional:
+### Required Variables
 
-VITE_SENTRY_DSN= (enables error tracking in production builds — see docs/deployment.md)
+```env
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_key_here
+```
 
-Never commit .env.
+### Optional Variables
 
-Use .env.example as the template for required environment variables.
+```env
+VITE_SENTRY_DSN= # enables error tracking in production builds (see docs/deployment.md)
+```
 
-The Supabase project referenced in the team's shared config is production (see
-docs/decisions/0010-phase13-production-readiness.md) — point your local .env at
-your own local Supabase stack instead (docs/supabase-cli-workflow.md's
-`supabase start`), not the production URL/keys.
+> [!WARNING]
+> Never commit `.env` or expose service-role / secret keys in frontend code.
 
-Development
+The Supabase project referenced in the team's shared config is production (see [`docs/decisions/0010-phase13-production-readiness.md`](./docs/decisions/0010-phase13-production-readiness.md)) — point your local `.env` at your own local Supabase stack instead ([`docs/supabase-cli-workflow.md`](./docs/supabase-cli-workflow.md)'s `supabase start`), not the production URL/keys.
+
+---
+
+## Development
+
+### Prerequisites
+
+- Node.js (v18+ recommended)
+- npm
+
+### Setup & Commands
 
 Install dependencies:
 
+```bash
 npm install
+```
 
 Start the development server:
 
+```bash
 npm run dev
+```
 
 Run linting:
 
+```bash
 npm run lint
-
-Run the production build:
-
-npm run build
+```
 
 Run tests:
 
+```bash
 npm run test
+```
 
 Run tests in watch mode:
 
+```bash
 npm run test:watch
-Development Philosophy
+```
 
-The project is intentionally developed in phases.
+Run database / RLS tests:
 
-Features should be implemented incrementally rather than generating the entire application at once.
+```bash
+npm run test:rls
+```
+
+Run the production build:
+
+```bash
+npm run build
+```
+
+Preview the production build:
+
+```bash
+npm run preview
+```
+
+---
+
+## Development Philosophy
+
+The project is intentionally developed in phases. Features should be implemented incrementally rather than generating the entire application at once.
 
 The goal is to maintain:
 
-Clear architecture
-Understandable code
-Strong security
-Consistent UI
-Testable features
-Maintainable database design
+- Clear architecture
+- Understandable code
+- Strong security
+- Consistent UI
+- Testable features
+- Maintainable database design
+
+---
+
+## Documentation
+
+- [`docs/product.md`](./docs/product.md) – Target users, core product areas, and non-goals
+- [`docs/architecture.md`](./docs/architecture.md) – Architecture overview, separation of concerns, and feature ownership
+- [`docs/database.md`](./docs/database.md) – Database schema, multi-tenancy, and RLS policies
+- [`docs/security.md`](./docs/security.md) – Security model and authorization rules
+- [`docs/design-system.md`](./docs/design-system.md) / [`DESIGN.md`](./DESIGN.md) – Design system and UI guidelines
+- [`docs/testing.md`](./docs/testing.md) – Testing strategy and guidelines
+- [`docs/deployment.md`](./docs/deployment.md) – Production build, deployment, and Sentry configuration
+- [`docs/supabase-cli-workflow.md`](./docs/supabase-cli-workflow.md) – Local Supabase workflow and migration guide
 
 ---
 
 ## Contributing
 
-Contributions are welcome. Please read [`CONTRIBUTING.md`](./CONTRIBUTING.md) and
-[`AGENTS.md`](./AGENTS.md) before opening a PR — they cover local setup, required
-checks, and the project's phase-based development approach. Bug reports and feature
-requests should use the GitHub issue templates; security issues should be reported
-privately per [`SECURITY.md`](./SECURITY.md).
+Contributions are welcome. Please read [`CONTRIBUTING.md`](./CONTRIBUTING.md) and [`AGENTS.md`](./AGENTS.md) before opening a PR — they cover local setup, required checks, and the project's phase-based development approach. Bug reports and feature requests should use the GitHub issue templates; security issues should be reported privately per [`SECURITY.md`](./SECURITY.md).
+
+---
 
 ## License
 
