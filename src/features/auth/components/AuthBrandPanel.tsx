@@ -1,4 +1,4 @@
-import logo from "@/assets/logo.png"
+import logo from "@/assets/TimeTrackr-white.png"
 
 // Fixed dark panel — the auth experience is always dark, independent of the
 // app's own (not-yet-wired) theme toggle, same as the reference this was

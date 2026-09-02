@@ -36,12 +36,12 @@ Non-goals for the initial product: payroll processing, recruitment, performance 
 ## Brand Commitments
 
 - Product/company name: **Time Trackr**.
-- `src/assets/logo.png` is the real product logo — treat it as a binding brand asset, not a placeholder.
+- `src/assets/timetrackr-black.png` (light theme) and `src/assets/TimeTrackr-white.png` (dark theme) are the real product logo — treat them as binding brand assets, not placeholders.
 
 ## Evidence on Hand
 
 - `docs/product.md` — full product context, target users, core product areas, SaaS direction, non-goals, and product principles (source document for this file).
-- `src/assets/logo.png` — real product logo asset.
+- `src/assets/timetrackr-black.png` / `src/assets/TimeTrackr-white.png` — real product logo assets (light/dark theme variants).
 - No testimonials, case studies, press, pricing, or usage data exist yet — do not fabricate any.
 
 ## Product Principles
