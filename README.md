@@ -1,4 +1,4 @@
-# Time Tracker
+# Time Trackr
 
 A SaaS-oriented time tracking application designed to replace spreadsheet-based employee time tracking.
 
@@ -101,8 +101,7 @@ docs/
 ├── database.md
 ├── security.md
 ├── design-system.md
-├── testing.md
-└── roadmap.md
+└── testing.md
 
 supabase/
 ├── migrations/
@@ -170,3 +169,17 @@ Strong security
 Consistent UI
 Testable features
 Maintainable database design
+
+---
+
+## Contributing
+
+Contributions are welcome. Please read [`CONTRIBUTING.md`](./CONTRIBUTING.md) and
+[`AGENTS.md`](./AGENTS.md) before opening a PR — they cover local setup, required
+checks, and the project's phase-based development approach. Bug reports and feature
+requests should use the GitHub issue templates; security issues should be reported
+privately per [`SECURITY.md`](./SECURITY.md).
+
+## License
+
+This project is licensed under the [MIT License](./LICENSE).

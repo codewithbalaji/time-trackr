@@ -89,7 +89,7 @@ export function ProtectedLayout() {
   )
 }
 
-const DEFAULT_DOCUMENT_TITLE = "time-tracker"
+const DEFAULT_DOCUMENT_TITLE = "Time Trackr"
 
 function ProtectedShell() {
   const { theme } = useTheme()

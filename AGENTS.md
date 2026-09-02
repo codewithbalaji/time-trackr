@@ -294,8 +294,6 @@ Do not modify dependencies without explaining why they are needed.
 
 The project is being developed in phases.
 
-Follow `docs/roadmap.md`.
-
 Do not implement future-phase functionality unless explicitly requested.
 
 For example:

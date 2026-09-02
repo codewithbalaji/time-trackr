@@ -2,7 +2,7 @@
 
 ## Product Name
 
-Time Tracker
+Time Trackr
 
 ## Product Type
 
