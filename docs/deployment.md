@@ -70,22 +70,31 @@ npx wrangler pages deploy dist --project-name=timetrackr
   in the Pages dashboard as long as deploys keep happening this way. If this
   moves to Cloudflare's git integration later, those same variables need to be
   set as Pages project environment variables instead.
-- **URL**: `https://timetrackr-a82.pages.dev` (Cloudflare appended a suffix; no
-  custom domain attached yet).
+- **URL**: `https://timetrackr.bkads.in` (custom domain attached to the
+  Cloudflare Pages project; the original `https://timetrackr-a82.pages.dev`
+  Pages-assigned URL still resolves too).
 - **Rollback**: Cloudflare Pages keeps every previous deployment — promote an
   older one from the dashboard (Pages → timetrackr → Deployments → "Rollback to
   this deployment"), or redeploy an old commit's `dist` via the CLI.
 
-### ⚠ Follow-up required: Supabase Auth redirect allow-list
+### Supabase Auth redirect allow-list
 
-The production Supabase project's Auth settings (dashboard → Authentication →
-URL Configuration) almost certainly still only allow-list `localhost` (that's
-all `supabase/config.toml` has, and that file only applies to the *local* stack
-unless pushed with `supabase config push` — see `docs/supabase-cli-workflow.md`).
-**Signup confirmation, password reset, and invite emails will redirect
-incorrectly on the live site until `https://timetrackr-a82.pages.dev` (and any
-custom domain added later) is added there.** This needs to be done by hand in
-the dashboard — it wasn't done as part of this deploy.
+The app never hardcodes a host for auth emails — `emailRedirectTo`/`redirectTo`
+in `src/features/auth/services/auth.service.ts` use `window.location.origin`,
+and `supabase/functions/send-invite-email/index.ts` uses the request's
+`Origin` header. What actually controls where confirmation, password-reset,
+and invite links point is the production Supabase project's Auth settings
+(dashboard → Authentication → URL Configuration), which is separate from
+`supabase/config.toml` (that file only applies to the *local* stack — see
+`docs/supabase-cli-workflow.md`).
+
+**Must be set by hand in that dashboard** (not via migration or CLI):
+- **Site URL**: `https://timetrackr.bkads.in`
+- **Redirect URLs** (allow-list): `https://timetrackr.bkads.in`,
+  `https://timetrackr.bkads.in/**`
+
+Keep the `*.pages.dev` URL out of this list once the custom domain is live —
+no reason to allow-list a host users aren't meant to land on.
 
 ## Error tracking (Sentry)
 

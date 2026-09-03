@@ -1,0 +1,15 @@
+name: Supabase Keepalive
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping keep-alive
+        run: |
+          curl -X POST https://keepalive-dashboard.vercel.app/api/health-check \
+            -H "Authorization: Bearer ${{ secrets.KEEPALIVE_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"project_id": "c89b386d-da8a-4146-af73-f0efbec2b9bd", "triggered_by": "github_actions"}'
