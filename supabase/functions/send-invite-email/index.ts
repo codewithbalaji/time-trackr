@@ -68,12 +68,37 @@ Deno.serve(async (req) => {
 
     if (inviteError) {
       // The invitee already has an auth account (in this org or another one)
-      // — GoTrue refuses to create a second one for the same email, but that
-      // isn't a real failure here: the invitations row stays pending and
-      // they accept/decline it in-app from /select-organization instead of
-      // via this email (see accept_invitation/decline_invitation RLS in
-      // supabase/migrations/20260914090000_existing_user_invite_flow.sql).
+      // — GoTrue's invite endpoint refuses to create a second one for the
+      // same email. They still need an actual email, though: send a
+      // magic-link sign-in email instead, using the same GoTrue mailer/SMTP
+      // config. Once they follow it they're authenticated and land in the
+      // app, where the accept/decline card on /select-organization (backed
+      // by get_pending_invitations_for_current_user, see
+      // supabase/migrations/20260915090000_pending_invitations_rpc.sql)
+      // shows this and any other pending invites.
       if (inviteError.code === "email_exists" || inviteError.code === "user_already_exists") {
+        // shouldCreateUser is false since the account is already known to
+        // exist. Deliberately no `data` option here (unlike the invite
+        // call above): AuthCallbackPage routes to the password-setup flow
+        // at /invite/accept whenever user_metadata.invitation_token is
+        // present, which this user must not hit — they already have a
+        // password, and setting that metadata would send them there anyway.
+        const anonClient = createClient(supabaseUrl, anonKey)
+        const { error: otpError } = await anonClient.auth.signInWithOtp({
+          email: invitation.email,
+          options: {
+            shouldCreateUser: false,
+            emailRedirectTo: `${origin}/auth/callback`,
+          },
+        })
+
+        if (otpError) {
+          if (!isResend) {
+            await adminClient.from("invitations").delete().eq("id", invitationId)
+          }
+          return jsonResponse({ error: otpError.message, code: otpError.code }, 400)
+        }
+
         return jsonResponse({ ok: true, existingAccount: true }, 200)
       }
 

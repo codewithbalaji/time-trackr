@@ -146,25 +146,8 @@ describe("listPendingInvitations", () => {
 })
 
 describe("listPendingInvitationsForCurrentUser", () => {
-  it("lists pending invitations addressed to the current user's email", async () => {
+  it("calls the get_pending_invitations_for_current_user RPC", async () => {
     const rows = [
-      {
-        id: "inv-1",
-        token: "token-1",
-        expires_at: "2026-12-31T00:00:00Z",
-        role: { name: "Member" },
-        organization: { name: "Acme" },
-      },
-    ]
-    const builder = createQueryBuilderMock({ data: rows, error: null })
-    mockSupabase.from.mockReturnValue(builder)
-
-    const result = await listPendingInvitationsForCurrentUser("a@b.com")
-
-    expect(mockSupabase.from).toHaveBeenCalledWith("invitations")
-    expect(builder.eq).toHaveBeenCalledWith("status", "pending")
-    expect(builder.ilike).toHaveBeenCalledWith("email", "a@b.com")
-    expect(result).toEqual([
       {
         id: "inv-1",
         token: "token-1",
@@ -172,7 +155,20 @@ describe("listPendingInvitationsForCurrentUser", () => {
         role_name: "Member",
         organization_name: "Acme",
       },
-    ])
+    ]
+    mockSupabase.rpc.mockResolvedValue({ data: rows, error: null })
+
+    const result = await listPendingInvitationsForCurrentUser()
+
+    expect(mockSupabase.rpc).toHaveBeenCalledWith("get_pending_invitations_for_current_user")
+    expect(result).toEqual(rows)
+  })
+
+  it("throws the Supabase error", async () => {
+    const error = { message: "boom" }
+    mockSupabase.rpc.mockResolvedValue({ data: null, error })
+
+    await expect(listPendingInvitationsForCurrentUser()).rejects.toEqual(error)
   })
 })
 

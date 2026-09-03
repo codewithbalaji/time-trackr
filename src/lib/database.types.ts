@@ -774,6 +774,16 @@ export type Database = {
           status: string
         }[]
       }
+      get_pending_invitations_for_current_user: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          token: string
+          expires_at: string
+          role_name: string
+          organization_name: string
+        }[]
+      }
       has_any_membership: {
         Args: { p_organization_id: string }
         Returns: boolean

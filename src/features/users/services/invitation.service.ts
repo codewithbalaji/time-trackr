@@ -108,35 +108,18 @@ export type PendingInvitationForUser = {
 // someone who already has an account (so was never sent the
 // account-creation email — see send-invite-email's email_exists handling).
 //
-// Must filter by email explicitly rather than relying on RLS alone: the
-// "Invitees can view pending invitations sent to their email" policy is
-// OR'd with the pre-existing "org owners/members.invite can view all their
-// organization's invitations" policy (for invite management), so an owner
-// querying without this filter would also get back invitations they sent to
-// *other* people in their own org — which looked like duplicate self-invites.
-export async function listPendingInvitationsForCurrentUser(
-  email: string
-): Promise<PendingInvitationForUser[]> {
-  const { data, error } = await supabase
-    .from("invitations")
-    .select("id, token, expires_at, role:roles(name), organization:organizations(name)")
-    .eq("status", "pending")
-    .ilike("email", email)
-    .order("created_at", { ascending: true })
+// Goes through a SECURITY DEFINER RPC rather than a plain `invitations`
+// select with embeds (`role:roles(name)`, `organization:organizations(name)`):
+// an invitee who isn't yet a member of the inviting org has no RLS SELECT
+// access to that org's `organizations`/`roles` rows (both scoped to
+// has_any_membership()), so PostgREST would return those embeds as null —
+// same problem get_invitation_by_token already solves for a single invite.
+export async function listPendingInvitationsForCurrentUser(): Promise<
+  PendingInvitationForUser[]
+> {
+  const { data, error } = await supabase.rpc("get_pending_invitations_for_current_user")
   if (error) throw error
-  return (data as unknown as Array<{
-    id: string
-    token: string
-    expires_at: string
-    role: { name: string }
-    organization: { name: string }
-  }>).map((row) => ({
-    id: row.id,
-    token: row.token,
-    expires_at: row.expires_at,
-    role_name: row.role.name,
-    organization_name: row.organization.name,
-  }))
+  return data
 }
 
 export async function declineInvitation(token: string) {
