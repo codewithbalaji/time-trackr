@@ -5,4 +5,6 @@ export const invitationKeys = {
 export const userKeys = {
   members: (organizationId: string | undefined) => ["org-members", organizationId] as const,
   invitations: (organizationId: string | undefined) => ["org-invitations", organizationId] as const,
+  pendingInvitationsForMe: (userId: string | undefined) =>
+    ["pending-invitations-for-me", userId] as const,
 }

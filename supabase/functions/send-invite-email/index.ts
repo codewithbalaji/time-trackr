@@ -67,6 +67,16 @@ Deno.serve(async (req) => {
     )
 
     if (inviteError) {
+      // The invitee already has an auth account (in this org or another one)
+      // — GoTrue refuses to create a second one for the same email, but that
+      // isn't a real failure here: the invitations row stays pending and
+      // they accept/decline it in-app from /select-organization instead of
+      // via this email (see accept_invitation/decline_invitation RLS in
+      // supabase/migrations/20260914090000_existing_user_invite_flow.sql).
+      if (inviteError.code === "email_exists" || inviteError.code === "user_already_exists") {
+        return jsonResponse({ ok: true, existingAccount: true }, 200)
+      }
+
       // Roll back the row created by createInvitation() so the caller isn't
       // permanently blocked by the "one pending invite per email" constraint
       // after a delivery failure. Uses the service-role client since the

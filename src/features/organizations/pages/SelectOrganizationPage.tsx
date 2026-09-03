@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router"
-import { Building2, UserX } from "lucide-react"
+import { Building2, Mail, UserX } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -13,10 +14,16 @@ import { Separator } from "@/components/ui/separator"
 import { useMemberships } from "@/features/organizations/hooks/useMemberships"
 import { setCurrentOrganizationId } from "@/features/organizations/stores/organizationStore"
 import { CreateOrganizationForm } from "@/features/organizations/components/CreateOrganizationForm"
+import { usePendingInvitationsForUser } from "@/features/users/hooks/usePendingInvitationsForUser"
+import { useAcceptInvitation } from "@/features/users/hooks/useAcceptInvitation"
+import { useDeclineInvitation } from "@/features/users/hooks/useDeclineInvitation"
 
 export function SelectOrganizationPage() {
   const navigate = useNavigate()
   const { data: memberships } = useMemberships()
+  const { data: pendingInvitations } = usePendingInvitationsForUser()
+  const acceptInvitation = useAcceptInvitation()
+  const declineInvitation = useDeclineInvitation()
 
   function selectOrganization(organizationId: string) {
     setCurrentOrganizationId(organizationId)
@@ -30,6 +37,50 @@ export function SelectOrganizationPage() {
         <CardDescription>Choose where you want to work, or create a new one.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
+        {pendingInvitations && pendingInvitations.length > 0 && (
+          <>
+            <div className="grid gap-1.5">
+              <p className="text-sm font-medium">Pending invitations</p>
+              {pendingInvitations.map((invitation) => (
+                <div
+                  key={invitation.id}
+                  className="flex items-center gap-3 rounded-lg border border-border px-3 py-2.5 text-sm"
+                >
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent">
+                    <Mail className="size-4 text-accent-foreground" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium">{invitation.organization_name}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      Invited as {invitation.role_name}
+                    </p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    disabled={declineInvitation.isPending || acceptInvitation.isPending}
+                    onClick={() => declineInvitation.mutate(invitation.token)}
+                  >
+                    Decline
+                  </Button>
+                  <Button
+                    size="sm"
+                    disabled={declineInvitation.isPending || acceptInvitation.isPending}
+                    onClick={() =>
+                      acceptInvitation.mutate(invitation.token, {
+                        onSuccess: () => navigate("/", { replace: true }),
+                      })
+                    }
+                  >
+                    Accept
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <Separator />
+          </>
+        )}
+
         <div className="grid gap-1.5">
           {memberships?.map((membership) =>
             membership.status === "suspended" ? (

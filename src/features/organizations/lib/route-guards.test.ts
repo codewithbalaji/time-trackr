@@ -7,13 +7,27 @@ import { useOrganizationStore } from "@/features/organizations/stores/organizati
 vi.mock("@/features/organizations/services/organization.service", () => ({
   getMembershipsForUser: vi.fn(),
 }))
+vi.mock("@/features/users/services/invitation.service", () => ({
+  listPendingInvitationsForCurrentUser: vi.fn(),
+}))
 
 const { getMembershipsForUser } = await import(
   "@/features/organizations/services/organization.service"
 )
+const { listPendingInvitationsForCurrentUser } = await import(
+  "@/features/users/services/invitation.service"
+)
 const { requireOrganization, redirectIfOnboarded, requireMemberships } = await import(
   "@/features/organizations/lib/route-guards"
 )
+
+const PENDING_INVITE = {
+  id: "inv-1",
+  token: "token-1",
+  expires_at: "2026-12-31T00:00:00Z",
+  role_name: "Member",
+  organization_name: "Acme",
+}
 
 const DEFAULT_TIME_SETTINGS = {
   timezone: "UTC",
@@ -50,6 +64,7 @@ beforeEach(() => {
     status: "authenticated",
   })
   useOrganizationStore.setState({ currentOrganizationId: null })
+  vi.mocked(listPendingInvitationsForCurrentUser).mockResolvedValue([])
 })
 
 describe("requireOrganization", () => {
@@ -118,6 +133,15 @@ describe("redirectIfOnboarded", () => {
 
     await expect(redirectIfOnboarded()).resolves.toBeNull()
   })
+
+  it("redirects to /select-organization when the user has no memberships but a pending invitation", async () => {
+    vi.mocked(getMembershipsForUser).mockResolvedValue([])
+    vi.mocked(listPendingInvitationsForCurrentUser).mockResolvedValue([PENDING_INVITE])
+
+    await expect(redirectIfOnboarded()).rejects.toSatisfy((error: unknown) =>
+      isRedirectTo(error, "/select-organization")
+    )
+  })
 })
 
 describe("requireMemberships", () => {
@@ -133,5 +157,12 @@ describe("requireMemberships", () => {
     vi.mocked(getMembershipsForUser).mockResolvedValue([ORG_A, ORG_B])
 
     await expect(requireMemberships()).resolves.toEqual([ORG_A, ORG_B])
+  })
+
+  it("resolves with an empty list when the user has no memberships but a pending invitation", async () => {
+    vi.mocked(getMembershipsForUser).mockResolvedValue([])
+    vi.mocked(listPendingInvitationsForCurrentUser).mockResolvedValue([PENDING_INVITE])
+
+    await expect(requireMemberships()).resolves.toEqual([])
   })
 })

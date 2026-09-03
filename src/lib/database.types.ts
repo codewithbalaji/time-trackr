@@ -760,6 +760,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      decline_invitation: {
+        Args: { p_token: string }
+        Returns: undefined
+      }
       get_invitation_by_token: {
         Args: { p_token: string }
         Returns: {

@@ -6,6 +6,8 @@ import { queryClient } from "@/lib/queryClient"
 import { getMembershipsForUser } from "@/features/organizations/services/organization.service"
 import { organizationKeys } from "@/features/organizations/lib/query-keys"
 import { useOrganizationStore } from "@/features/organizations/stores/organizationStore"
+import { listPendingInvitationsForCurrentUser } from "@/features/users/services/invitation.service"
+import { userKeys } from "@/features/users/lib/query-keys"
 
 // Unlike the auth guards, this must hit Supabase (org membership isn't session
 // data, so it isn't in the thin authStore) — loaders can be async, so we query
@@ -19,6 +21,17 @@ async function getMemberships() {
   return queryClient.fetchQuery({
     queryKey: organizationKeys.memberships(userId),
     queryFn: () => getMembershipsForUser(userId),
+  })
+}
+
+// Same re-check-on-every-navigation reasoning as getMemberships above — a
+// pending invite arriving (or being accepted/declined) mid-session must be
+// reflected on the next navigation, not read from a stale cache.
+async function getPendingInvitations() {
+  const userId = useAuthStore.getState().session!.user.id
+  return queryClient.fetchQuery({
+    queryKey: userKeys.pendingInvitationsForMe(userId),
+    queryFn: listPendingInvitationsForCurrentUser,
   })
 }
 
@@ -54,18 +67,30 @@ export async function redirectIfOnboarded() {
   if (memberships.length > 0) {
     throw redirect("/")
   }
+  // A user with zero memberships but a pending invite (e.g. they already had
+  // an account before being invited — see
+  // supabase/migrations/20260914090000_existing_user_invite_flow.sql)
+  // belongs on the invite picker, not funneled into creating their own org.
+  const pendingInvitations = await getPendingInvitations()
+  if (pendingInvitations.length > 0) {
+    throw redirect("/select-organization")
+  }
   return null
 }
 
 // Guards /select-organization: reachable any time a signed-in user has at
 // least one membership (not just right after login — this is also where the
-// sidebar's "switch organization" action lands), but a session with zero
-// memberships has nothing to pick from and belongs in onboarding instead.
+// sidebar's "switch organization" action lands) or a pending invitation to
+// accept/decline. A session with neither has nothing to pick from and
+// belongs in onboarding instead.
 export async function requireMemberships() {
   requireSession()
   const memberships = await getMemberships()
   if (memberships.length === 0) {
-    throw redirect("/onboarding")
+    const pendingInvitations = await getPendingInvitations()
+    if (pendingInvitations.length === 0) {
+      throw redirect("/onboarding")
+    }
   }
   return memberships
 }

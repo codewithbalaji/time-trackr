@@ -95,6 +95,49 @@ export async function revokeInvitation(id: string) {
   if (error) throw error
 }
 
+export type PendingInvitationForUser = {
+  id: string
+  token: string
+  role_name: string
+  organization_name: string
+  expires_at: string
+}
+
+// Invitations addressed to the signed-in user's own email, regardless of
+// which organization they're for — visible via the "Invitees can view
+// pending invitations sent to their email" RLS policy, not an org-owner
+// check. Surfaced on /select-organization for someone who already has an
+// account (so was never sent the account-creation email — see
+// send-invite-email's email_exists handling).
+export async function listPendingInvitationsForCurrentUser(): Promise<
+  PendingInvitationForUser[]
+> {
+  const { data, error } = await supabase
+    .from("invitations")
+    .select("id, token, expires_at, role:roles(name), organization:organizations(name)")
+    .eq("status", "pending")
+    .order("created_at", { ascending: true })
+  if (error) throw error
+  return (data as unknown as Array<{
+    id: string
+    token: string
+    expires_at: string
+    role: { name: string }
+    organization: { name: string }
+  }>).map((row) => ({
+    id: row.id,
+    token: row.token,
+    expires_at: row.expires_at,
+    role_name: row.role.name,
+    organization_name: row.organization.name,
+  }))
+}
+
+export async function declineInvitation(token: string) {
+  const { error } = await supabase.rpc("decline_invitation", { p_token: token })
+  if (error) throw error
+}
+
 // Resend just extends the expiry window and re-sends the same email; the
 // invitation row (and its token) stays the same rather than issuing a new one.
 export async function resendInvitation(id: string) {

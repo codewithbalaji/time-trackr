@@ -11,6 +11,8 @@ const {
   getInvitationByToken,
   acceptInvitation,
   listPendingInvitations,
+  listPendingInvitationsForCurrentUser,
+  declineInvitation,
   revokeInvitation,
   resendInvitation,
 } = await import("@/features/users/services/invitation.service")
@@ -140,6 +142,53 @@ describe("listPendingInvitations", () => {
     expect(builder.eq).toHaveBeenCalledWith("organization_id", "org-1")
     expect(builder.eq).toHaveBeenCalledWith("status", "pending")
     expect(result).toEqual(rows)
+  })
+})
+
+describe("listPendingInvitationsForCurrentUser", () => {
+  it("lists pending invitations addressed to the current user's email", async () => {
+    const rows = [
+      {
+        id: "inv-1",
+        token: "token-1",
+        expires_at: "2026-12-31T00:00:00Z",
+        role: { name: "Member" },
+        organization: { name: "Acme" },
+      },
+    ]
+    const builder = createQueryBuilderMock({ data: rows, error: null })
+    mockSupabase.from.mockReturnValue(builder)
+
+    const result = await listPendingInvitationsForCurrentUser()
+
+    expect(mockSupabase.from).toHaveBeenCalledWith("invitations")
+    expect(builder.eq).toHaveBeenCalledWith("status", "pending")
+    expect(result).toEqual([
+      {
+        id: "inv-1",
+        token: "token-1",
+        expires_at: "2026-12-31T00:00:00Z",
+        role_name: "Member",
+        organization_name: "Acme",
+      },
+    ])
+  })
+})
+
+describe("declineInvitation", () => {
+  it("calls the decline_invitation RPC with the token", async () => {
+    mockSupabase.rpc.mockResolvedValue({ data: null, error: null })
+
+    await declineInvitation("token-1")
+
+    expect(mockSupabase.rpc).toHaveBeenCalledWith("decline_invitation", { p_token: "token-1" })
+  })
+
+  it("throws the Supabase error", async () => {
+    const error = { message: "invitation_not_found" }
+    mockSupabase.rpc.mockResolvedValue({ data: null, error })
+
+    await expect(declineInvitation("token-1")).rejects.toEqual(error)
   })
 })
 

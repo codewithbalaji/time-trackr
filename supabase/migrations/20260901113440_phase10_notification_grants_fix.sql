@@ -1,4 +1,4 @@
--- Fixes 20260911090000_phase10_notifications.sql: "revoke execute ... from
+-- Fixes 20260901113332_phase10_notifications.sql: "revoke execute ... from
 -- public" does not strip privileges granted directly to a named role. This
 -- project's "alter default privileges ... grant execute on functions to
 -- authenticated" (20260826093405_remote_schema.sql) grants EXECUTE to the

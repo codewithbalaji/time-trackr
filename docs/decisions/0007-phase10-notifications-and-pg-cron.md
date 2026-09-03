@@ -31,7 +31,7 @@ direct user action (an RPC call) or a database trigger on a row change.
    `EXECUTE` to `authenticated` automatically on every new function, so this
    revoke had to target those roles directly; revoking from `PUBLIC` alone is
    a no-op against a grant made straight to a named role, which is what
-   `20260911091500_phase10_notification_grants_fix.sql` corrects). It is only
+   `20260901113440_phase10_notification_grants_fix.sql` corrects). It is only
    reachable from other trusted `plpgsql` functions, keeping the trust
    boundary at the existing guarded RPCs instead of opening a general
    "insert any notification for any user" endpoint.
