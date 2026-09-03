@@ -37,6 +37,7 @@ export function createQueryBuilderMock(result: { data: unknown; error: unknown }
     "update",
     "delete",
     "eq",
+    "ilike",
     "not",
     "gte",
     "lt",

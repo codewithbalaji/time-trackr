@@ -159,10 +159,11 @@ describe("listPendingInvitationsForCurrentUser", () => {
     const builder = createQueryBuilderMock({ data: rows, error: null })
     mockSupabase.from.mockReturnValue(builder)
 
-    const result = await listPendingInvitationsForCurrentUser()
+    const result = await listPendingInvitationsForCurrentUser("a@b.com")
 
     expect(mockSupabase.from).toHaveBeenCalledWith("invitations")
     expect(builder.eq).toHaveBeenCalledWith("status", "pending")
+    expect(builder.ilike).toHaveBeenCalledWith("email", "a@b.com")
     expect(result).toEqual([
       {
         id: "inv-1",

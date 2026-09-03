@@ -28,10 +28,10 @@ async function getMemberships() {
 // pending invite arriving (or being accepted/declined) mid-session must be
 // reflected on the next navigation, not read from a stale cache.
 async function getPendingInvitations() {
-  const userId = useAuthStore.getState().session!.user.id
+  const user = useAuthStore.getState().session!.user
   return queryClient.fetchQuery({
-    queryKey: userKeys.pendingInvitationsForMe(userId),
-    queryFn: listPendingInvitationsForCurrentUser,
+    queryKey: userKeys.pendingInvitationsForMe(user.id),
+    queryFn: () => listPendingInvitationsForCurrentUser(user.email!),
   })
 }
 

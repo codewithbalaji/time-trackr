@@ -104,18 +104,24 @@ export type PendingInvitationForUser = {
 }
 
 // Invitations addressed to the signed-in user's own email, regardless of
-// which organization they're for — visible via the "Invitees can view
-// pending invitations sent to their email" RLS policy, not an org-owner
-// check. Surfaced on /select-organization for someone who already has an
-// account (so was never sent the account-creation email — see
-// send-invite-email's email_exists handling).
-export async function listPendingInvitationsForCurrentUser(): Promise<
-  PendingInvitationForUser[]
-> {
+// which organization they're for. Surfaced on /select-organization for
+// someone who already has an account (so was never sent the
+// account-creation email — see send-invite-email's email_exists handling).
+//
+// Must filter by email explicitly rather than relying on RLS alone: the
+// "Invitees can view pending invitations sent to their email" policy is
+// OR'd with the pre-existing "org owners/members.invite can view all their
+// organization's invitations" policy (for invite management), so an owner
+// querying without this filter would also get back invitations they sent to
+// *other* people in their own org — which looked like duplicate self-invites.
+export async function listPendingInvitationsForCurrentUser(
+  email: string
+): Promise<PendingInvitationForUser[]> {
   const { data, error } = await supabase
     .from("invitations")
     .select("id, token, expires_at, role:roles(name), organization:organizations(name)")
     .eq("status", "pending")
+    .ilike("email", email)
     .order("created_at", { ascending: true })
   if (error) throw error
   return (data as unknown as Array<{
