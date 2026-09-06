@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router"
+import { createBrowserRouter, redirect } from "react-router"
 
 import { AuthLayout } from "@/layouts/AuthLayout"
 import { ProtectedLayout } from "@/layouts/ProtectedLayout"
@@ -17,9 +17,8 @@ import { requirePermission } from "@/features/roles/lib/route-guards"
 import { OnboardingPage } from "@/features/organizations/pages/OnboardingPage"
 import { InviteAcceptPage } from "@/features/users/pages/InviteAcceptPage"
 import { SelectOrganizationPage } from "@/features/organizations/pages/SelectOrganizationPage"
-import { OrganizationSettingsPage } from "@/features/organizations/pages/OrganizationSettingsPage"
 import { MembersPage } from "@/features/users/pages/MembersPage"
-import { ProfilePage } from "@/features/users/pages/ProfilePage"
+import { SettingsPage } from "@/pages/SettingsPage"
 import { ClientsPage } from "@/features/clients/pages/ClientsPage"
 import { ProjectsPage } from "@/features/projects/pages/ProjectsPage"
 import { TimeTrackerPage } from "@/features/time-tracking/pages/TimeTrackerPage"
@@ -36,11 +35,21 @@ export const router = createBrowserRouter([
     children: [
       { path: "/login", element: <LoginPage />, loader: redirectIfAuthenticated },
       { path: "/signup", element: <SignupPage />, loader: redirectIfAuthenticated },
-      { path: "/forgot-password", element: <ForgotPasswordPage /> },
-      { path: "/reset-password", element: <ResetPasswordPage /> },
+      {
+        path: "/forgot-password",
+        element: <ForgotPasswordPage />,
+        loader: redirectIfAuthenticated,
+      },
+      // Reachable only with the session a recovery link establishes — without
+      // this guard the form submits into an AuthSessionMissingError with no
+      // way forward.
+      { path: "/reset-password", element: <ResetPasswordPage />, loader: requireSession },
       { path: "/auth/callback", element: <AuthCallbackPage /> },
       { path: "/onboarding", element: <OnboardingPage />, loader: redirectIfOnboarded },
-      { path: "/invite/accept", element: <InviteAcceptPage />, loader: requireSession },
+      // Public: an invitee usually has no account yet. The page reads the
+      // invitation token from the URL and handles the signed-out, signed-in,
+      // and wrong-account cases itself.
+      { path: "/invite/accept", element: <InviteAcceptPage /> },
       {
         path: "/select-organization",
         element: <SelectOrganizationPage />,
@@ -65,17 +74,25 @@ export const router = createBrowserRouter([
       { path: "/reports", element: <ReportsPage /> },
       { path: "/notifications", element: <NotificationsPage /> },
       { path: "/members", element: <MembersPage /> },
-      { path: "/profile", element: <ProfilePage /> },
+      // Account settings moved into /settings as a tab. Kept as a redirect
+      // rather than deleted: it was a real route, and anything bookmarked or
+      // linked to it should still land somewhere sensible.
+      {
+        path: "/profile",
+        loader: () => redirect("/settings?tab=account"),
+        element: null,
+      },
       {
         path: "/audit-log",
         element: <AuditLogPage />,
         loader: requirePermission("audit_logs.view"),
       },
-      {
-        path: "/settings",
-        element: <OrganizationSettingsPage />,
-        loader: requirePermission("organization.manage_settings"),
-      },
+      // No permission loader: the page is readable by every member and only
+      // the writes are gated (RLS enforces that anyway). Gating the route on
+      // organization.manage_settings locked out Admins, who are deliberately
+      // denied that permission by the RBAC seed — and the Account tab is
+      // nobody's business but the signed-in user's.
+      { path: "/settings", element: <SettingsPage /> },
     ],
   },
 ])

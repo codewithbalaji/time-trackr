@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { supabase } from "@/lib/supabase"
+import { useAuthStore } from "@/features/auth/stores/authStore"
 
 type CallbackState = "verifying" | "invalid"
 
@@ -32,12 +33,26 @@ export function AuthCallbackPage() {
       hashParams.get("error_code") ??
       hashParams.get("error")
   )
+  // Two signals, because neither is sufficient alone. The `type=recovery` param
+  // only survives because the app puts it in its own redirectTo — GoTrue's PKCE
+  // redirect carries just `?code=`, and if the redirect URL isn't in the
+  // project's allow-list GoTrue drops it and falls back to the site URL
+  // entirely. The PASSWORD_RECOVERY event that authStore records is the part
+  // that doesn't depend on the URL surviving the round trip.
+  const isRecoveryEvent = useAuthStore((state) => state.isPasswordRecovery)
   const isRecovery =
-    searchParams.get("type") === "recovery" || hashParams.get("type") === "recovery"
+    isRecoveryEvent ||
+    searchParams.get("type") === "recovery" ||
+    hashParams.get("type") === "recovery"
 
   const [state, setState] = useState<CallbackState>(
     hasErrorInUrl ? "invalid" : "verifying"
   )
+
+  // Captured before the effect runs, so it's the session as it was *before*
+  // this page tried to establish one.
+  const [priorAccessToken] = useState(() => useAuthStore.getState().session?.access_token)
+  const hasCode = Boolean(searchParams.get("code"))
 
   useEffect(() => {
     if (hasErrorInUrl) return
@@ -48,23 +63,30 @@ export function AuthCallbackPage() {
         return
       }
 
-      // The `type=invite` URL param isn't reliable here: Supabase's PKCE auth
-      // flow redirects with only `?code=...`, dropping `type`. The invite
-      // Edge Function stamps `invitation_token` into user_metadata via
-      // inviteUserByEmail's `data` option, which survives on the session
-      // regardless of flow type, so that's the signal we key off instead.
-      const isInvite = Boolean(data.session.user?.user_metadata?.invitation_token)
+      // getSession returns the *stored* session, and a failed PKCE exchange
+      // neither clears it nor reports here. Someone already signed in who
+      // clicks a dead link would otherwise sail through as though it worked.
+      // If a code was present and the session is the one we already had, the
+      // exchange didn't happen.
+      if (hasCode && data.session.access_token === priorAccessToken) {
+        setState("invalid")
+        return
+      }
 
-      // Only three link types ever land here: signup confirmation, password
-      // recovery, and org invites — everything else is a fresh signup
-      // confirmation, which always needs onboarding next. A stale/reclicked
-      // confirmation link from an already-onboarded user is handled by
-      // redirectIfOnboarded on the /onboarding route itself.
-      navigate(isRecovery ? "/reset-password" : isInvite ? "/invite/accept" : "/onboarding", {
+      // Only two link types land here now: signup confirmation and password
+      // recovery. Invitations no longer route through this page at all — their
+      // email links point straight at /invite/accept?token=..., which reads the
+      // token from the URL (see supabase/functions/send-invite-email/index.ts).
+      //
+      // Anything that isn't recovery is a signup confirmation, which always
+      // needs onboarding next. A stale/reclicked confirmation link from an
+      // already-onboarded user is handled by redirectIfOnboarded on the
+      // /onboarding route itself.
+      navigate(isRecovery ? "/reset-password" : "/onboarding", {
         replace: true,
       })
     })
-  }, [navigate, hasErrorInUrl, isRecovery])
+  }, [navigate, hasErrorInUrl, isRecovery, hasCode, priorAccessToken])
 
   if (state === "invalid") {
     return (

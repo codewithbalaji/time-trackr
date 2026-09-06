@@ -12,7 +12,14 @@ export function createMockSupabaseClient() {
       resetPasswordForEmail: vi.fn(),
       updateUser: vi.fn(),
       getSession: vi.fn(),
-      onAuthStateChange: vi.fn(() => ({
+      // Typed with the callback parameter the real API takes, so a test can
+      // override this and drive auth events (SIGNED_OUT, PASSWORD_RECOVERY)
+      // by hand.
+      onAuthStateChange: vi.fn<
+        (callback?: (event: string, session: unknown) => void) => {
+          data: { subscription: { unsubscribe: () => void } }
+        }
+      >(() => ({
         data: { subscription: { unsubscribe: vi.fn() } },
       })),
     },

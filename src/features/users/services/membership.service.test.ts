@@ -53,13 +53,20 @@ describe("updateMembershipStatus", () => {
 
 describe("removeMember", () => {
   it("deletes the membership", async () => {
-    const builder = createQueryBuilderMock({ data: null, error: null })
+    const builder = createQueryBuilderMock({ data: [{ id: "m-1" }], error: null })
     mockSupabase.from.mockReturnValue(builder)
 
     await removeMember("m-1")
 
     expect(mockSupabase.from).toHaveBeenCalledWith("memberships")
     expect(builder.eq).toHaveBeenCalledWith("id", "m-1")
+  })
+
+  it("throws when RLS refuses the delete, which affects no rows and reports no error", async () => {
+    const builder = createQueryBuilderMock({ data: [], error: null })
+    mockSupabase.from.mockReturnValue(builder)
+
+    await expect(removeMember("m-1")).rejects.toMatchObject({ code: "not_permitted" })
   })
 
   it("throws when the delete fails", async () => {

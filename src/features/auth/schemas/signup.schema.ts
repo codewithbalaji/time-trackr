@@ -1,11 +1,13 @@
 import { z } from "zod"
 
+import { emailSchema } from "@/features/auth/schemas/email"
+
 import { passwordSchema } from "@/features/auth/schemas/password-policy"
 
 export const signupSchema = z
   .object({
-    fullName: z.string().min(1, "Full name is required"),
-    email: z.string().min(1, "Email is required").email("Enter a valid email address"),
+    fullName: z.string().trim().min(1, "Full name is required").max(120, "Full name is too long"),
+    email: emailSchema,
     password: passwordSchema,
     confirmPassword: z.string().min(1, "Please confirm your password"),
   })

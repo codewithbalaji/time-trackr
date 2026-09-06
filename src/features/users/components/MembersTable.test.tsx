@@ -90,7 +90,7 @@ function renderTable(members: OrgMember[], permissionKeys: string[]) {
         members={members}
         isLoading={false}
         organizationId="org-1"
-        canManageMembers
+        canRemoveMembers canManageStatus
       />
     </QueryClientProvider>
   )
@@ -108,7 +108,7 @@ describe("MembersTable", () => {
     const queryClient = new QueryClient()
     render(
       <QueryClientProvider client={queryClient}>
-        <MembersTable members={[]} isLoading organizationId="org-1" canManageMembers />
+        <MembersTable members={[]} isLoading organizationId="org-1" canRemoveMembers canManageStatus />
       </QueryClientProvider>
     )
     expect(screen.getByText(/loading members/i)).toBeInTheDocument()
@@ -119,7 +119,7 @@ describe("MembersTable", () => {
     const queryClient = new QueryClient()
     render(
       <QueryClientProvider client={queryClient}>
-        <MembersTable members={[]} isLoading={false} organizationId="org-1" canManageMembers />
+        <MembersTable members={[]} isLoading={false} organizationId="org-1" canRemoveMembers canManageStatus />
       </QueryClientProvider>
     )
     expect(screen.getByText("No members yet")).toBeInTheDocument()
@@ -137,13 +137,13 @@ describe("MembersTable", () => {
   it("shows the role as a read-only badge without roles.assign, and a picker with it", async () => {
     const { rerender } = render(
       <QueryClientProvider client={new QueryClient()}>
-        <MembersTable members={[OTHER]} isLoading={false} organizationId="org-1" canManageMembers />
+        <MembersTable members={[OTHER]} isLoading={false} organizationId="org-1" canRemoveMembers canManageStatus />
       </QueryClientProvider>
     )
     mockFrom([])
     rerender(
       <QueryClientProvider client={new QueryClient()}>
-        <MembersTable members={[OTHER]} isLoading={false} organizationId="org-1" canManageMembers />
+        <MembersTable members={[OTHER]} isLoading={false} organizationId="org-1" canRemoveMembers canManageStatus />
       </QueryClientProvider>
     )
     expect(await screen.findByText("Member")).toBeInTheDocument()
@@ -152,7 +152,7 @@ describe("MembersTable", () => {
     mockFrom(["roles.assign"])
     rerender(
       <QueryClientProvider client={new QueryClient()}>
-        <MembersTable members={[OTHER]} isLoading={false} organizationId="org-1" canManageMembers />
+        <MembersTable members={[OTHER]} isLoading={false} organizationId="org-1" canRemoveMembers canManageStatus />
       </QueryClientProvider>
     )
     expect(await screen.findByRole("combobox")).toBeInTheDocument()

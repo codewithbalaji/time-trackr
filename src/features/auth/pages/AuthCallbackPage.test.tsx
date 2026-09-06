@@ -41,7 +41,12 @@ describe("AuthCallbackPage", () => {
     )
   })
 
-  it("routes an invite link to /invite/accept, keyed off invitation_token in user_metadata", async () => {
+  it("no longer treats a leftover invitation_token as an invite link", async () => {
+    // Invitations don't route through this page any more: their emailed link
+    // points straight at /invite/accept?token=..., and the stale
+    // user_metadata.invitation_token that used to drive this branch was
+    // sending already-onboarded users to a dead invitation on every
+    // subsequent email login.
     mockSupabase.auth.getSession.mockResolvedValue({
       data: {
         session: {
@@ -52,12 +57,10 @@ describe("AuthCallbackPage", () => {
       error: null,
     })
 
-    // No `type=invite` in the URL — Supabase's PKCE flow drops it, so this
-    // must route off the session's user_metadata alone.
     renderCallback("/auth/callback")
 
     await waitFor(() =>
-      expect(navigateMock).toHaveBeenCalledWith("/invite/accept", { replace: true })
+      expect(navigateMock).toHaveBeenCalledWith("/onboarding", { replace: true })
     )
   })
 

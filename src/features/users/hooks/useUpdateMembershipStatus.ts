@@ -19,6 +19,12 @@ export function useUpdateMembershipStatus(organizationId: string | undefined) {
     }) => updateMembershipStatus(membershipId, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.members(organizationId) })
+      // A membership change can change what the *actor* is allowed to do (they
+      // may have just demoted themselves, or removed the person whose role they
+      // were mirroring), and the permission caches are keyed by org, not by the
+      // membership row. Drop them so the sidebar and the action menus re-derive.
+      queryClient.invalidateQueries({ queryKey: ["has-permission", organizationId] })
+      queryClient.invalidateQueries({ queryKey: ["my-permissions", organizationId] })
     },
     onError: (error: PostgrestError) => toast.error(mapOrganizationError(error)),
   })

@@ -18,6 +18,7 @@ import {
   type ResetPasswordInput,
 } from "@/features/auth/schemas/reset-password.schema"
 import { useResetPassword } from "@/features/auth/hooks/useResetPassword"
+import { clearPasswordRecovery } from "@/features/auth/stores/authStore"
 
 export function ResetPasswordForm() {
   const navigate = useNavigate()
@@ -31,7 +32,15 @@ export function ResetPasswordForm() {
     resetPassword.mutate(values.password, {
       onSuccess: () => {
         toast.success("Your password has been updated.")
-        navigate("/login")
+        // The recovery flag has done its job routing this link; leaving it set
+        // would make a later visit to /reset-password in the same session look
+        // like another recovery.
+        clearPasswordRecovery()
+        // A recovery link establishes a full session, and updateUser refreshes
+        // it — so the user is signed in by this point. Sending them to /login
+        // just bounced them through redirectIfAuthenticated to "/" and on to
+        // the organization picker. Go to "/" and let the guards route.
+        navigate("/", { replace: true })
       },
     })
   }

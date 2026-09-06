@@ -28,7 +28,13 @@ export function CreateOrganizationForm() {
 
   function onSubmit(values: CreateOrganizationInput) {
     createOrganization.mutate(values.organizationName, {
-      onSuccess: () => navigate("/", { replace: true }),
+      onSuccess: () => {
+        // Creation isn't idempotent and organization names aren't unique, so a
+        // half-failed request left the name sitting in the box for someone to
+        // resubmit into a second, identical organization.
+        form.reset()
+        navigate("/", { replace: true })
+      },
     })
   }
 

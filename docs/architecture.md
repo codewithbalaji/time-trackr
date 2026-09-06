@@ -155,6 +155,12 @@ For example:
 
 A page may compose components from one or more features.
 
+`src/pages/SettingsPage.tsx` is the worked example: its Organization tab comes
+from the organizations feature and its Account tab from the users feature, so
+neither owns the page. The tab is held in the URL (`?tab=organization|account`)
+rather than in component state, so it can be linked to — `/profile` redirects to
+`?tab=account`, and the sidebar's account row links there.
+
 ### `schemas/`
 
 Contains globally shared validation schemas.

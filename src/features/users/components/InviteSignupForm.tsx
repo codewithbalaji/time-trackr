@@ -1,7 +1,7 @@
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { useNavigate } from "react-router"
-import { toast } from "sonner"
+import { MailCheck } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -17,57 +17,56 @@ import {
   inviteAcceptSchema,
   type InviteAcceptInput,
 } from "@/features/users/schemas/invite-accept.schema"
-import { useAcceptInvitation } from "@/features/users/hooks/useAcceptInvitation"
-import { updateProfile } from "@/features/auth/services/profile.service"
-import { useAuthStore } from "@/features/auth/stores/authStore"
-import { supabase } from "@/lib/supabase"
+import { useSignup } from "@/features/auth/hooks/useSignup"
 
-export function InviteAcceptForm({
-  token,
-  email,
-  organizationName,
-}: {
-  token: string
-  email: string
-  organizationName: string
-}) {
-  const navigate = useNavigate()
-  const userId = useAuthStore((state) => state.session?.user.id)
-  const acceptInvitation = useAcceptInvitation()
+// Account creation for an invitee who doesn't have one yet.
+//
+// This creates a normal account rather than completing a GoTrue invite: the
+// invitation itself is accepted separately, from the invitation token in the
+// URL, once they're signed in. Email confirmation still applies (
+// auth.email.enable_confirmations), so there's no session immediately after
+// this — hence the "check your email" state below.
+//
+// That confirmation link is single-use, but unlike the old invite link it's
+// scanner-safe in effect: if a mail gateway pre-fetches it, the only thing that
+// happens is the address gets confirmed, and the invitee can sign in with the
+// password they just chose and pick the invitation up from there.
+export function InviteSignupForm({ token, email }: { token: string; email: string }) {
+  const [submittedEmail, setSubmittedEmail] = useState<string | null>(null)
+  const signup = useSignup()
   const form = useForm<InviteAcceptInput>({
     resolver: zodResolver(inviteAcceptSchema),
     defaultValues: { fullName: "", password: "", confirmPassword: "" },
   })
 
-  async function onSubmit(values: InviteAcceptInput) {
-    const { error } = await supabase.auth.updateUser({
-      password: values.password,
-      data: { full_name: values.fullName },
-    })
-    if (error) {
-      toast.error("Something went wrong. Please try again.")
-      return
-    }
-
-    // updateUser() above only changes auth.users' metadata — handle_new_user
-    // only syncs full_name into profiles on INSERT (i.e. for a normal
-    // signup), not on a later metadata update, so an invited user's name has
-    // to be written to profiles directly here. Non-fatal: they can still fix
-    // it from their profile settings, so it shouldn't block joining the org.
-    if (userId) {
-      try {
-        await updateProfile(userId, values.fullName)
-      } catch {
-        toast.error("Your name couldn't be saved — you can set it from your profile settings.")
-      }
-    }
-
-    acceptInvitation.mutate(token, {
-      onSuccess: () => navigate("/", { replace: true }),
-    })
+  function onSubmit(values: InviteAcceptInput) {
+    signup.mutate(
+      {
+        email,
+        password: values.password,
+        fullName: values.fullName,
+        redirectPath: `/invite/accept?token=${token}`,
+      },
+      { onSuccess: () => setSubmittedEmail(email) }
+    )
   }
 
-  const isSubmitting = form.formState.isSubmitting || acceptInvitation.isPending
+  if (submittedEmail) {
+    return (
+      <div className="grid gap-3">
+        <div className="flex size-9 items-center justify-center rounded-lg bg-accent">
+          <MailCheck className="size-5 text-accent-foreground" />
+        </div>
+        <div>
+          <p className="text-sm font-medium">Confirm your email</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            We sent a confirmation link to {submittedEmail}. Click it and you'll
+            come straight back here to join the organization.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <Form {...form}>
@@ -75,10 +74,6 @@ export function InviteAcceptForm({
         <div className="grid gap-1.5">
           <span className="text-sm font-medium">Email</span>
           <p className="text-sm text-muted-foreground">{email}</p>
-        </div>
-        <div className="grid gap-1.5">
-          <span className="text-sm font-medium">Organization</span>
-          <p className="text-sm text-muted-foreground">{organizationName}</p>
         </div>
         <FormField
           control={form.control}
@@ -119,8 +114,8 @@ export function InviteAcceptForm({
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? "Joining..." : "Join organization"}
+        <Button type="submit" disabled={signup.isPending} className="w-full">
+          {signup.isPending ? "Creating account..." : "Create account"}
         </Button>
       </form>
     </Form>

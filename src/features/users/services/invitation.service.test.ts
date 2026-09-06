@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import { FunctionsFetchError } from "@supabase/supabase-js"
+
 import { createMockSupabaseClient, createQueryBuilderMock } from "@/test/supabase-mock"
+import { mapOrganizationError } from "@/features/organizations/services/organization-errors"
 
 const mockSupabase = createMockSupabaseClient()
 
@@ -79,6 +82,31 @@ describe("createInvitation", () => {
         invitedBy: "user-1",
       })
     ).rejects.toEqual(sendError)
+  })
+
+  it("turns a FunctionsFetchError into a code the error map recognises", async () => {
+    // A request that never reached the function (offline, CORS, cold start)
+    // used to fall through toInvitationError untouched and surface as an
+    // unexplained "Something went wrong."
+    const invitation = { id: "inv-1", email: "a@b.com", organization_id: "org-1" }
+    mockSupabase.from.mockReturnValue(createQueryBuilderMock({ data: invitation, error: null }))
+    mockSupabase.functions.invoke.mockResolvedValue({
+      data: null,
+      error: new FunctionsFetchError(new TypeError("Failed to fetch")),
+    })
+
+    await expect(
+      createInvitation({
+        organizationId: "org-1",
+        email: "a@b.com",
+        roleId: "role-1",
+        invitedBy: "user-1",
+      })
+    ).rejects.toMatchObject({ code: "email_unreachable" })
+
+    expect(mapOrganizationError({ code: "email_unreachable", message: "email_unreachable" })).toMatch(
+      /couldn't reach the server/i
+    )
   })
 })
 
@@ -191,13 +219,20 @@ describe("declineInvitation", () => {
 
 describe("revokeInvitation", () => {
   it("updates the invitation status to revoked", async () => {
-    const builder = createQueryBuilderMock({ data: null, error: null })
+    const builder = createQueryBuilderMock({ data: [{ id: "inv-1" }], error: null })
     mockSupabase.from.mockReturnValue(builder)
 
     await revokeInvitation("inv-1")
 
     expect(builder.update).toHaveBeenCalledWith({ status: "revoked" })
     expect(builder.eq).toHaveBeenCalledWith("id", "inv-1")
+  })
+
+  it("throws when RLS refuses the update, which affects no rows and reports no error", async () => {
+    const builder = createQueryBuilderMock({ data: [], error: null })
+    mockSupabase.from.mockReturnValue(builder)
+
+    await expect(revokeInvitation("inv-1")).rejects.toMatchObject({ code: "not_permitted" })
   })
 
   it("throws when the update fails", async () => {
@@ -210,7 +245,7 @@ describe("revokeInvitation", () => {
 })
 
 describe("resendInvitation", () => {
-  it("bumps the expiry and re-invokes the send-invite-email function", async () => {
+  it("bumps the expiry, rotates the token, and re-invokes the send-invite-email function", async () => {
     const invitation = { id: "inv-1", email: "a@b.com" }
     const builder = createQueryBuilderMock({ data: invitation, error: null })
     mockSupabase.from.mockReturnValue(builder)
@@ -218,11 +253,13 @@ describe("resendInvitation", () => {
 
     const result = await resendInvitation("inv-1")
 
+    // The link *is* the token, so a resend has to issue a new one — otherwise
+    // every previously mailed copy stays live.
     expect(builder.update).toHaveBeenCalledWith(
-      expect.objectContaining({ expires_at: expect.any(String) })
+      expect.objectContaining({ expires_at: expect.any(String), token: expect.any(String) })
     )
     expect(mockSupabase.functions.invoke).toHaveBeenCalledWith("send-invite-email", {
-      body: { invitationId: "inv-1", isResend: true },
+      body: { invitationId: "inv-1" },
     })
     expect(result).toEqual(invitation)
   })

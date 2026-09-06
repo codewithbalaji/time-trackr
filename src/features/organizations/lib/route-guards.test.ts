@@ -39,12 +39,14 @@ const ORG_A = {
   id: "m-1",
   role: { id: "r-1", name: "Owner" },
   status: "active" as const,
+  created_at: "2026-01-01T00:00:00Z",
   organization: { id: "org-1", name: "Acme", ...DEFAULT_TIME_SETTINGS },
 }
 const ORG_B = {
   id: "m-2",
   role: { id: "r-2", name: "Member" },
   status: "active" as const,
+  created_at: "2026-01-02T00:00:00Z",
   organization: { id: "org-2", name: "Widgets Co", ...DEFAULT_TIME_SETTINGS },
 }
 

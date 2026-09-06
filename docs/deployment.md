@@ -80,10 +80,11 @@ npx wrangler pages deploy dist --project-name=timetrackr
 ### Supabase Auth redirect allow-list
 
 The app never hardcodes a host for auth emails — `emailRedirectTo`/`redirectTo`
-in `src/features/auth/services/auth.service.ts` use `window.location.origin`,
-and `supabase/functions/send-invite-email/index.ts` uses the request's
-`Origin` header. What actually controls where confirmation, password-reset,
-and invite links point is the production Supabase project's Auth settings
+in `src/features/auth/services/auth.service.ts` use `window.location.origin`.
+(Invitation emails are the exception and no longer go through GoTrue at all —
+see "Invitation email" below.) What actually controls where confirmation,
+password-reset, and email-change links point is the production Supabase
+project's Auth settings
 (dashboard → Authentication → URL Configuration), which is separate from
 `supabase/config.toml` (that file only applies to the *local* stack — see
 `docs/supabase-cli-workflow.md`).
@@ -95,6 +96,52 @@ and invite links point is the production Supabase project's Auth settings
 
 Keep the `*.pages.dev` URL out of this list once the custom domain is live —
 no reason to allow-list a host users aren't meant to land on.
+
+## Invitation email
+
+Organization invitations do **not** use GoTrue's mailer. The
+`send-invite-email` Edge Function renders the email itself and posts it to
+Resend's API, carrying the app's own `/invite/accept?token=...` link — see
+[ADR-0011](decisions/0011-app-owned-invitation-links.md) for why. GoTrue's SMTP
+config still matters for signup confirmation, password recovery, and email
+change.
+
+Both halves have to be set up by hand, and neither is covered by CI:
+
+1. **Edge Function secrets** — the invitation path needs these, and fails with
+   "Email delivery isn't configured yet" without them:
+
+   ```
+   supabase secrets set RESEND_API_KEY=<key> APP_URL=https://timetrackr.bkads.in
+   ```
+
+   `APP_URL` is the host the emailed link points at. It is deliberately *not*
+   taken from the request's `Origin` header: a link built from a caller-supplied
+   header and then emailed with a live invitation token is a phishing vector.
+   Only `localhost`/`127.0.0.1` overrides it, for `supabase functions serve`.
+
+2. **GoTrue SMTP** — `[auth.email.smtp]` in `supabase/config.toml` resolves
+   `pass` from `RESEND_SMTP_PASSWORD` at push time, and that file is inert
+   against production until pushed:
+
+   ```
+   export RESEND_SMTP_PASSWORD=<smtp password>   # never a VITE_* var
+   supabase config push
+   ```
+
+   Skip this and the remote project silently falls back to Supabase's shared
+   mailer, which only delivers to project-team addresses and is rate-limited to
+   roughly two emails an hour — the most likely explanation for "signup emails
+   aren't arriving".
+
+3. **Resend** — `mail.timetrackr.bkads.in` must still be a verified sending
+   domain and the API key still live. Nothing in the repo detects a rotated key;
+   the symptom is a 502 from the Edge Function, which now logs the provider's
+   response.
+
+To check delivery end to end, invite an address you control and confirm the link
+is `https://timetrackr.bkads.in/invite/accept?token=...` — **not** a
+`.../auth/v1/verify?...` URL. If it's the latter, an old build is deployed.
 
 ## Error tracking (Sentry)
 

@@ -22,9 +22,21 @@ export function SignupPage() {
             <MailCheck className="size-5 text-accent-foreground" />
           </div>
           <CardTitle className="mt-3">Check your email</CardTitle>
+          {/*
+            Deliberately hedged. With email confirmations on, GoTrue returns
+            success for an address that already has an account (it won't confirm
+            or deny who's registered), and no new email is sent — so promising
+            "we sent you a link" left returning users waiting for mail that was
+            never coming.
+          */}
           <CardDescription>
-            We sent a confirmation link to <strong className="font-medium text-foreground">{submittedEmail}</strong>.
-            Click it to activate your account.
+            If <strong className="font-medium text-foreground">{submittedEmail}</strong> doesn't
+            already have an account, we've sent it a confirmation link — click it
+            to activate. Already registered?{" "}
+            <Link to="/login" className="text-foreground hover:underline">
+              Sign in
+            </Link>{" "}
+            instead.
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -1,5 +1,6 @@
+import { format } from "date-fns"
 import { useNavigate } from "react-router"
-import { Building2, Mail, UserX } from "lucide-react"
+import { Building2, Loader2, Mail, TriangleAlert, UserX } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -20,7 +21,11 @@ import { useDeclineInvitation } from "@/features/users/hooks/useDeclineInvitatio
 
 export function SelectOrganizationPage() {
   const navigate = useNavigate()
-  const { data: memberships } = useMemberships()
+  const {
+    data: memberships,
+    isLoading: membershipsLoading,
+    isError: membershipsErrored,
+  } = useMemberships()
   const { data: pendingInvitations } = usePendingInvitationsForUser()
   const acceptInvitation = useAcceptInvitation()
   const declineInvitation = useDeclineInvitation()
@@ -82,6 +87,31 @@ export function SelectOrganizationPage() {
         )}
 
         <div className="grid gap-1.5">
+          {membershipsLoading && (
+            <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" />
+              Loading your organizations...
+            </div>
+          )}
+
+          {membershipsErrored && (
+            <div className="flex items-center gap-3 rounded-lg border border-dashed border-destructive/40 px-3 py-2.5 text-sm">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
+                <TriangleAlert className="size-4 text-destructive" />
+              </div>
+              <p className="text-muted-foreground">
+                We couldn't load your organizations. Try refreshing the page.
+              </p>
+            </div>
+          )}
+
+          {!membershipsLoading && !membershipsErrored && memberships?.length === 0 && (
+            <p className="py-2 text-sm text-muted-foreground">
+              You're not a member of any organization yet. Create one below to
+              get started.
+            </p>
+          )}
+
           {memberships?.map((membership) =>
             membership.status === "suspended" ? (
               <div
@@ -107,8 +137,16 @@ export function SelectOrganizationPage() {
                 <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent">
                   <Building2 className="size-4 text-accent-foreground" />
                 </div>
-                <span className="flex-1 truncate font-medium">
-                  {membership.organization.name}
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-medium">
+                    {membership.organization.name}
+                  </span>
+                  {/* Nothing stops two organizations sharing a name, and the
+                      picker was rendering them as identical rows. The join date
+                      is the cheapest thing that always differs. */}
+                  <span className="block truncate text-xs text-muted-foreground">
+                    Joined {format(new Date(membership.created_at), "MMM d, yyyy")}
+                  </span>
                 </span>
                 <span className="rounded-full border border-border px-1.5 py-0.5 text-xs tracking-wide text-muted-foreground uppercase">
                   {membership.role.name}

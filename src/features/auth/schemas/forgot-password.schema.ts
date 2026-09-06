@@ -1,7 +1,9 @@
 import { z } from "zod"
 
+import { emailSchema } from "@/features/auth/schemas/email"
+
 export const forgotPasswordSchema = z.object({
-  email: z.string().min(1, "Email is required").email("Enter a valid email address"),
+  email: emailSchema,
 })
 
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>

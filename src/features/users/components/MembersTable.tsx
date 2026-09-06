@@ -51,12 +51,14 @@ export function MembersTable({
   members,
   isLoading,
   organizationId,
-  canManageMembers,
+  canRemoveMembers,
+  canManageStatus,
 }: {
   members: OrgMember[]
   isLoading: boolean
   organizationId: string
-  canManageMembers: boolean
+  canRemoveMembers: boolean
+  canManageStatus: boolean
 }) {
   const currentUserId = useAuthStore((state) => state.session?.user.id)
   const updateStatus = useUpdateMembershipStatus(organizationId)
@@ -64,7 +66,20 @@ export function MembersTable({
   const assignRole = useAssignRole(organizationId)
   const { data: roles } = useRoles(organizationId)
   const canAssignRoles = useHasPermission(organizationId, "roles.assign")
-  const assignableRoles = roles?.filter((role) => role.name !== "Owner") ?? []
+  const canManageMembers = canRemoveMembers || canManageStatus
+  const isCurrentUserOwner = members.some(
+    (member) => member.profile.id === currentUserId && member.role.name === "Owner"
+  )
+  // Only an Owner may grant the Owner role — assign_membership_role enforces
+  // that server-side, so offering it to anyone else just produces a rejected
+  // write. Matching on the system flag as well as the name keeps a custom role
+  // that happens to be called "Owner" out of the special case.
+  // ponytail: name matching is the weak part; a stable roles.key column is the
+  // real fix once organizations can define their own roles.
+  const assignableRoles =
+    roles?.filter(
+      (role) => isCurrentUserOwner || !(role.is_system && role.name === "Owner")
+    ) ?? []
 
   // Reactivating is low-stakes to click by accident (it only grants access
   // back), so only suspend/remove/role-change — the ones that take access
@@ -166,23 +181,27 @@ export function MembersTable({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => {
-                              if (member.status === "active") {
-                                setPendingSuspend({ member })
-                              } else {
-                                updateStatus.mutate({ membershipId: member.id, status: "active" })
-                              }
-                            }}
-                          >
-                            {member.status === "active" ? "Suspend" : "Reactivate"}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            variant="destructive"
-                            onClick={() => setPendingRemoval({ member })}
-                          >
-                            Remove
-                          </DropdownMenuItem>
+                          {canManageStatus && (
+                            <DropdownMenuItem
+                              onClick={() => {
+                                if (member.status === "active") {
+                                  setPendingSuspend({ member })
+                                } else {
+                                  updateStatus.mutate({ membershipId: member.id, status: "active" })
+                                }
+                              }}
+                            >
+                              {member.status === "active" ? "Suspend" : "Reactivate"}
+                            </DropdownMenuItem>
+                          )}
+                          {canRemoveMembers && (
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onClick={() => setPendingRemoval({ member })}
+                            >
+                              Remove
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}

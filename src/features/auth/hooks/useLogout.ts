@@ -1,6 +1,5 @@
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
-import type { AuthError } from "@supabase/supabase-js"
 
 import { signOut } from "@/features/auth/services/auth.service"
 import { mapAuthError } from "@/features/auth/services/auth-errors"
@@ -12,9 +11,21 @@ import { clearCurrentOrganizationId } from "@/features/organizations/stores/orga
 // nothing else clears it, so it's done explicitly here (see
 // docs/decisions/0003-multi-organization-selection.md).
 export function useLogout() {
+  const queryClient = useQueryClient()
+
   return useMutation({
     mutationFn: signOut,
-    onSuccess: () => clearCurrentOrganizationId(),
-    onError: (error: AuthError) => toast.error(mapAuthError(error)),
+    onSuccess: () => {
+      clearCurrentOrganizationId()
+      // The queryClient is a module singleton that outlives the session. Most
+      // keys are scoped by user id, but roleKeys.permission is keyed by
+      // organization alone and resolves against auth.uid() server-side — so
+      // without this the next person to sign in on this tab gets one render of
+      // the previous user's cached permissions in the sidebar.
+      queryClient.clear()
+    },
+    // `unknown`, not AuthError: TanStack types this as Error, and a
+    // network failure rejects with a bare TypeError. mapAuthError handles both.
+    onError: (error: unknown) => toast.error(mapAuthError(error)),
   })
 }

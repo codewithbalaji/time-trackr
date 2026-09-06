@@ -1,4 +1,4 @@
-import { FunctionsHttpError } from "@supabase/supabase-js"
+import { FunctionsFetchError, FunctionsHttpError } from "@supabase/supabase-js"
 
 import { supabase } from "@/lib/supabase"
 
@@ -33,11 +33,18 @@ export async function createInvitation({
 // supabase.functions.invoke()'s error doesn't put the function's JSON error
 // body in `.message` — it's on `FunctionsHttpError.context` (the raw
 // Response), so we have to read it out ourselves to get the actual reason
-// (e.g. the invitee already has an account) instead of a generic failure.
+// instead of a generic failure.
 async function toInvitationError(error: unknown) {
   if (error instanceof FunctionsHttpError) {
     const body = await error.context.json().catch(() => null)
     return { code: body?.code ?? "", message: body?.error ?? error.message }
+  }
+  // FunctionsFetchError (and a bare TypeError from fetch) means the request
+  // never reached the function at all — offline, CORS, a cold start that timed
+  // out. Without this it falls through mapOrganizationError with neither key
+  // matching and reads as an unexplained server error.
+  if (error instanceof FunctionsFetchError || error instanceof TypeError) {
+    return { code: "email_unreachable", message: "email_unreachable" }
   }
   return error
 }
@@ -91,8 +98,17 @@ export async function listPendingInvitations(
 }
 
 export async function revokeInvitation(id: string) {
-  const { error } = await supabase.from("invitations").update({ status: "revoked" }).eq("id", id)
+  // `.select()` is load-bearing, not decoration. An UPDATE that RLS refuses
+  // matches zero rows and returns no error, so without reading the result back
+  // a revoke the caller isn't allowed to make looks like a success — the toast
+  // fires, the cache is invalidated, and the invitation reappears.
+  const { data, error } = await supabase
+    .from("invitations")
+    .update({ status: "revoked" })
+    .eq("id", id)
+    .select("id")
   if (error) throw error
+  if (!data || data.length === 0) throw { code: "not_permitted", message: "not_permitted" }
 }
 
 export type PendingInvitationForUser = {
@@ -127,20 +143,25 @@ export async function declineInvitation(token: string) {
   if (error) throw error
 }
 
-// Resend just extends the expiry window and re-sends the same email; the
-// invitation row (and its token) stays the same rather than issuing a new one.
+// Resend extends the expiry window, issues a fresh token, and re-sends the
+// email on the same invitation row.
+//
+// Rotating the token matters: the link is the token, so keeping it would leave
+// every previously mailed copy live. A resend usually happens because the old
+// link went somewhere it shouldn't have or the invitee can't find it, and
+// either way only the newest link should work.
 export async function resendInvitation(id: string) {
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
   const { data, error } = await supabase
     .from("invitations")
-    .update({ expires_at: expiresAt })
+    .update({ expires_at: expiresAt, token: crypto.randomUUID() })
     .eq("id", id)
     .select()
     .single()
   if (error) throw error
 
   const { error: sendError } = await supabase.functions.invoke("send-invite-email", {
-    body: { invitationId: data.id, isResend: true },
+    body: { invitationId: data.id },
   })
   if (sendError) throw await toInvitationError(sendError)
 

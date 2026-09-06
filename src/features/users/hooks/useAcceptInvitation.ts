@@ -16,7 +16,12 @@ export function useAcceptInvitation() {
   return useMutation({
     mutationFn: acceptInvitation,
     onSuccess: (membership) => {
-      setCurrentOrganizationId(membership.organization_id)
+      // accept_invitation raises rather than returning null on every failure
+      // path it knows about, but this reads a field off an RPC result — guard
+      // it rather than throwing a TypeError inside a success handler.
+      if (membership?.organization_id) {
+        setCurrentOrganizationId(membership.organization_id)
+      }
       queryClient.invalidateQueries({ queryKey: organizationKeys.memberships(userId) })
       queryClient.invalidateQueries({ queryKey: userKeys.pendingInvitationsForMe(userId) })
     },

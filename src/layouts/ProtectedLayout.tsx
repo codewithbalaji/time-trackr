@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react"
-import { NavLink, Outlet, useNavigate } from "react-router"
+import { NavLink, Outlet, useNavigate, useRevalidator } from "react-router"
 import { toast } from "sonner"
 import {
   ArrowLeftRight,
@@ -73,12 +73,10 @@ const NAV_ITEMS: NavItem[] = [
     icon: ScrollText,
     permissionKey: "audit_logs.view",
   },
-  {
-    label: "Settings",
-    to: "/settings",
-    icon: Settings,
-    permissionKey: "organization.manage_settings",
-  },
+  // No permissionKey: /settings is readable by every member (only editing is
+  // gated), so hiding the link left most people with no way to see the
+  // timezone and formats their timesheets are computed in.
+  { label: "Settings", to: "/settings", icon: Settings },
 ]
 
 export function ProtectedLayout() {
@@ -96,9 +94,35 @@ function ProtectedShell() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const currentOrganization = useCurrentOrganization()
   const userId = useAuthStore((state) => state.session?.user.id)
+  const authStatus = useAuthStore((state) => state.status)
+  const navigate = useNavigate()
+  const revalidator = useRevalidator()
   const { data: runningEntry } = useRunningTimeEntry(currentOrganization?.organization.id, userId)
   const elapsedSeconds = useElapsedSeconds(runningEntry?.start_time)
   useNotificationsRealtime(currentOrganization?.organization.id, userId)
+
+  // Route guards only run on navigation, so a session that ends elsewhere —
+  // signed out in another tab, or a refresh token that stops working — left
+  // this shell rendered with every query underneath it quietly 401ing until
+  // the user happened to click a link.
+  useEffect(() => {
+    if (authStatus === "unauthenticated") {
+      navigate("/login", { replace: true })
+    }
+  }, [authStatus, navigate])
+
+  // Same blind spot for membership: requireOrganization re-checks on
+  // navigation, so someone suspended mid-session keeps a valid selection and
+  // just sees pages come back empty. The database already refuses the reads;
+  // this is so they're told why. Revalidating on focus is enough — it's when
+  // they come back to the tab that they'd notice.
+  useEffect(() => {
+    function onFocus() {
+      revalidator.revalidate()
+    }
+    window.addEventListener("focus", onFocus)
+    return () => window.removeEventListener("focus", onFocus)
+  }, [revalidator])
 
   useEffect(() => {
     if (!mobileNavOpen) return
@@ -192,10 +216,6 @@ function Sidebar({
   const navigate = useNavigate()
   const { data: profile } = useProfile()
   const currentOrganization = useCurrentOrganization()
-  const canManageSettings = useHasPermission(
-    currentOrganization?.organization.id,
-    "organization.manage_settings"
-  )
   const canApproveTimesheets = useHasPermission(
     currentOrganization?.organization.id,
     "timesheets.approve"
@@ -205,7 +225,6 @@ function Sidebar({
     "audit_logs.view"
   )
   const grantedPermissions: Record<string, boolean> = {
-    "organization.manage_settings": canManageSettings,
     "timesheets.approve": canApproveTimesheets,
     "audit_logs.view": canViewAuditLog,
   }
@@ -319,14 +338,21 @@ function Sidebar({
         <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-sidebar-accent text-xs font-medium text-sidebar-accent-foreground">
           {initials}
         </div>
-        <div className="min-w-0 flex-1">
+        {/* The name/email block is the obvious place to click for "my
+            account", and until now it wasn't clickable at all — the account
+            settings route had nothing linking to it. */}
+        <NavLink
+          to="/settings?tab=account"
+          onClick={onNavigate}
+          className="min-w-0 flex-1 rounded-lg px-1 py-0.5 transition-colors hover:bg-sidebar-accent/50 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+        >
           <p className="truncate text-sm font-medium">
             {profile?.full_name ?? "Your account"}
           </p>
           <p className="truncate text-xs text-sidebar-foreground/50">
             {profile?.email}
           </p>
-        </div>
+        </NavLink>
         <NotificationBell organizationId={currentOrganization?.organization.id} />
         <Button
           variant="ghost"

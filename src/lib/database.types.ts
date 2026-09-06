@@ -332,6 +332,7 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          theme: string
           updated_at: string
         }
         Insert: {
@@ -339,6 +340,7 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          theme?: string
           updated_at?: string
         }
         Update: {
@@ -346,6 +348,7 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          theme?: string
           updated_at?: string
         }
         Relationships: []
@@ -741,7 +744,7 @@ export type Database = {
         }
       }
       create_organization_with_owner: {
-        Args: { p_name: string }
+        Args: { p_name: string; p_timezone?: string }
         Returns: {
           created_at: string
           created_by: string

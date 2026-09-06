@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
-import { Link, useNavigate } from "react-router"
+import { Link, useNavigate, useSearchParams } from "react-router"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -15,9 +15,11 @@ import {
 import { Input } from "@/components/ui/input"
 import { loginSchema, type LoginInput } from "@/features/auth/schemas/login.schema"
 import { useLogin } from "@/features/auth/hooks/useLogin"
+import { safeRedirectPath } from "@/features/auth/lib/redirect"
 
 export function LoginForm() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const login = useLogin()
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -28,12 +30,13 @@ export function LoginForm() {
     login.mutate(values, {
       onSuccess: () => {
         toast.success("Signed in successfully.")
-        // Always through the organization picker on a fresh login (even with
-        // just one org) — see docs/decisions/0003-multi-organization-selection.md.
+        // Defaults to the organization picker on a fresh login (even with just
+        // one org) — see docs/decisions/0003-multi-organization-selection.md.
         // requireOrganization would otherwise send them here anyway once it
         // sees no selection for this session, but going there directly skips
-        // an extra redirect hop.
-        navigate("/select-organization")
+        // an extra redirect hop. `?redirect=` overrides it so someone who
+        // followed an invitation link lands back on the invitation.
+        navigate(safeRedirectPath(searchParams.get("redirect")))
       },
     })
   }

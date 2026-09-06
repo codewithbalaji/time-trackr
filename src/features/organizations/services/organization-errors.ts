@@ -13,6 +13,10 @@ const ORGANIZATION_ERROR_MESSAGES: Record<string, string> = {
   email_exists: "That person already has an account.",
   user_already_exists: "That person already has an account.",
   over_email_send_rate_limit: "Too many invitations sent. Please wait before trying again.",
+  email_send_failed: "The invitation email couldn't be sent. The invitation is saved — try Resend from the members list.",
+  email_not_configured: "Email delivery isn't configured yet. The invitation is saved — ask an administrator to check the email settings.",
+  email_unreachable: "We couldn't reach the server to send the invitation. Check your connection and try Resend from the members list.",
+  not_permitted: "You don't have permission to do that.",
   membership_not_found: "That member no longer exists.",
   insufficient_permissions: "You don't have permission to do that.",
   role_not_found: "That role doesn't exist in this organization.",
@@ -23,6 +27,9 @@ const ORGANIZATION_ERROR_MESSAGES: Record<string, string> = {
   already_a_member: "You're already a member of this organization. If your account was suspended, ask an admin to reactivate you from the Members page.",
   invalid_timezone: "That's not a recognized timezone.",
   "23514": "That value isn't valid.",
+  // PostgREST returns this when .single() matched no row — under RLS that
+  // usually means the write was refused rather than that the row is missing.
+  PGRST116: "You don't have permission to do that, or that item no longer exists.",
 }
 
 export function mapOrganizationError(error: Pick<PostgrestError, "message" | "code">): string {

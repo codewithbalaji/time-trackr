@@ -15,13 +15,7 @@ import { Input } from "@/components/ui/input"
 import { profileSchema, type ProfileInput } from "@/features/users/schemas/profile.schema"
 import { useUpdateProfile } from "@/features/auth/hooks/useUpdateProfile"
 
-export function ProfileForm({
-  fullName,
-  email,
-}: {
-  fullName: string | null
-  email: string
-}) {
+export function ProfileForm({ fullName }: { fullName: string | null }) {
   const updateProfile = useUpdateProfile()
   const form = useForm<ProfileInput>({
     resolver: zodResolver(profileSchema),
@@ -39,10 +33,6 @@ export function ProfileForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="grid gap-4">
-        <div className="grid gap-1.5">
-          <span className="text-sm font-medium">Email</span>
-          <p className="text-sm text-muted-foreground">{email}</p>
-        </div>
         <FormField
           control={form.control}
           name="fullName"

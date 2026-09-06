@@ -281,9 +281,11 @@ content_path = "./supabase/templates/recovery.html"
 subject = "Your magic login link - Time Trackr"
 content_path = "./supabase/templates/magic_link.html"
 
-[auth.email.template.invite]
-subject = "You have been invited to Time Trackr"
-content_path = "./supabase/templates/invite.html"
+# No [auth.email.template.invite] block: org invitations no longer go through
+# GoTrue's invite mailer at all. They're sent by the send-invite-email Edge
+# Function via Resend's API, carrying the app's own idempotent
+# /invite/accept?token=... link — GoTrue's single-use link was being burned by
+# corporate mail scanners before the invitee ever clicked it.
 
 [auth.email.template.email_change]
 subject = "Confirm your new email - Time Trackr"

@@ -23,6 +23,9 @@ describe("createOrganizationWithOwner", () => {
 
     expect(mockSupabase.rpc).toHaveBeenCalledWith("create_organization_with_owner", {
       p_name: "Acme",
+      // Seeded from the browser so the organization isn't created at the
+      // column's 'UTC' default, which Settings then had to lie about.
+      p_timezone: expect.any(String),
     })
     expect(result).toEqual(org)
   })

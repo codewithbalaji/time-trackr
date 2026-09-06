@@ -15,7 +15,7 @@ function renderForm(fullName: string | null) {
   const queryClient = new QueryClient()
   return render(
     <QueryClientProvider client={queryClient}>
-      <ProfileForm fullName={fullName} email="me@example.com" />
+      <ProfileForm fullName={fullName} />
     </QueryClientProvider>
   )
 }
@@ -59,7 +59,7 @@ describe("ProfileForm", () => {
 
     rerender(
       <QueryClientProvider client={new QueryClient()}>
-        <ProfileForm fullName="Ana Reviewer" email="me@example.com" />
+        <ProfileForm fullName="Ana Reviewer" />
       </QueryClientProvider>
     )
 

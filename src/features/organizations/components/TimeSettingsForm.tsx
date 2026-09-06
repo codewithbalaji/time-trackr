@@ -17,7 +17,6 @@ import {
   type UpdateTimeSettingsInput,
 } from "@/features/organizations/schemas/update-time-settings.schema"
 import { DATE_FORMAT_VALUES, TIME_FORMAT_VALUES } from "@/features/organizations/lib/date-time-format"
-import { detectBrowserTimezone } from "@/features/organizations/lib/timezone-options"
 import { useUpdateTimeSettings } from "@/features/organizations/hooks/useUpdateTimeSettings"
 import type { MembershipWithOrganization } from "@/features/organizations/services/organization.service"
 
@@ -47,14 +46,14 @@ export function TimeSettingsForm({
   const form = useForm<UpdateTimeSettingsInput>({
     resolver: zodResolver(updateTimeSettingsSchema),
     values: {
-      // "UTC" is the column's default, so an org that has never customized
-      // this setting still reads as "UTC" — indistinguishable from one that
-      // deliberately chose UTC. Preselecting the browser's detected zone in
-      // that case (never one already explicitly set to something else) is
-      // an intentional, disclosed heuristic, not a live override: saving
-      // any other value here permanently clears it on the next load.
-      timezone:
-        timeSettings.timezone === "UTC" ? (detectBrowserTimezone() ?? "UTC") : timeSettings.timezone,
+      // Shows what's actually stored, nothing else. This used to substitute the
+      // browser's detected zone whenever the stored value was "UTC" — but a
+      // `values` prefill doesn't mark the form dirty, and Save is disabled
+      // until it is, so the screen displayed a timezone that could not be saved
+      // and that none of the week/day maths was using. New organizations now
+      // capture the creator's zone at creation time instead (see
+      // create_organization_with_owner), which is where the guess belongs.
+      timezone: timeSettings.timezone,
       dateFormat: timeSettings.date_format,
       timeFormat: timeSettings.time_format,
       dayStart: timeSettings.day_start.slice(0, 5),

@@ -27,11 +27,15 @@ import { useAuthStore } from "@/features/auth/stores/authStore"
 
 export function CreateInvitationForm({ organizationId }: { organizationId: string }) {
   const userId = useAuthStore((state) => state.session?.user.id)
-  const createInvitation = useCreateInvitation()
+  const createInvitation = useCreateInvitation(organizationId)
   const { data: roles } = useRoles(organizationId)
-  // Owner is never an invitable role — it's assigned once, to the org's creator.
+  // Owner is never an invitable role — it's assigned once, to the org's
+  // creator. Matching on the system flag as well as the name keeps a custom
+  // role that happens to be called "Owner" out of the special case.
+  // ponytail: name matching is the weak part; a stable roles.key column is the
+  // real fix once organizations can define their own roles.
   const assignableRoles = useMemo(
-    () => roles?.filter((role) => role.name !== "Owner") ?? [],
+    () => roles?.filter((role) => !(role.is_system && role.name === "Owner")) ?? [],
     [roles]
   )
   const form = useForm<InviteInput>({
@@ -53,6 +57,9 @@ export function CreateInvitationForm({ organizationId }: { organizationId: strin
           toast.success(`Invitation sent to ${values.email}.`)
           form.resetField("email")
         },
+        // Failures leave the invitation row in place deliberately (see the
+        // Edge Function) — it shows up under Pending invitations with a Resend
+        // button, so refresh that list either way.
       }
     )
   }

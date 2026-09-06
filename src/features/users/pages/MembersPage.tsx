@@ -19,7 +19,12 @@ export function MembersPage() {
   const membership = useCurrentOrganization()
   const organizationId = membership?.organization.id
   const canInvite = useHasPermission(organizationId, "members.invite")
-  const canManageMembers = useHasPermission(organizationId, "members.remove")
+  // Removing and suspending are separate permissions in the RBAC schema
+  // (members.remove vs members.manage_status). Gating both on members.remove
+  // hid Suspend from roles that were allowed to use it, and offered it to
+  // roles whose write the database then silently refused.
+  const canRemoveMembers = useHasPermission(organizationId, "members.remove")
+  const canManageStatus = useHasPermission(organizationId, "members.manage_status")
   const {
     data: members,
     isLoading: membersLoading,
@@ -83,7 +88,8 @@ export function MembersPage() {
               members={members ?? []}
               isLoading={membersLoading}
               organizationId={organizationId!}
-              canManageMembers={canManageMembers}
+              canRemoveMembers={canRemoveMembers}
+              canManageStatus={canManageStatus}
             />
           )}
         </CardContent>

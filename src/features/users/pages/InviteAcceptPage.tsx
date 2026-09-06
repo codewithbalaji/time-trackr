@@ -1,4 +1,5 @@
-import { Loader2, TriangleAlert } from "lucide-react"
+import { Loader2, Mail, TriangleAlert } from "lucide-react"
+import { Link, useNavigate, useSearchParams } from "react-router"
 
 import {
   Card,
@@ -10,36 +11,62 @@ import {
 import { Button } from "@/components/ui/button"
 import { useAuthStore } from "@/features/auth/stores/authStore"
 import { useInvitation } from "@/features/users/hooks/useInvitation"
-import { InviteAcceptForm } from "@/features/users/components/InviteAcceptForm"
+import { useAcceptInvitation } from "@/features/users/hooks/useAcceptInvitation"
+import { useLogout } from "@/features/auth/hooks/useLogout"
+import { InviteSignupForm } from "@/features/users/components/InviteSignupForm"
 
-function InvalidInviteCard({ description }: { description: string }) {
+function InviteMessageCard({
+  title,
+  description,
+  children,
+}: {
+  title: string
+  description: string
+  children?: React.ReactNode
+}) {
   return (
     <Card>
       <CardHeader>
         <div className="flex size-9 items-center justify-center rounded-lg bg-destructive/10">
           <TriangleAlert className="size-5 text-destructive" />
         </div>
-        <CardTitle className="mt-3">This invitation is invalid</CardTitle>
+        <CardTitle className="mt-3">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <Button className="w-full" onClick={() => (window.location.href = "/login")}>
-          Back to sign in
-        </Button>
+        {children ?? (
+          <Button className="w-full" asChild>
+            <Link to="/login">Back to sign in</Link>
+          </Button>
+        )}
       </CardContent>
     </Card>
   )
 }
 
+// The invitation landing page. Reached from the emailed link, which carries the
+// invitations row's own token in the URL — deliberately not a GoTrue
+// verification link, whose single use was being consumed by corporate mail
+// scanners before the invitee ever clicked (see
+// supabase/functions/send-invite-email/index.ts).
+//
+// The route is public: an invitee usually has no account yet, and the ones who
+// do still need somewhere to be told to sign in.
 export function InviteAcceptPage() {
-  const token = useAuthStore(
-    (state) => state.session?.user.user_metadata?.invitation_token as string | undefined
-  )
-  const { data: invitation, isLoading } = useInvitation(token)
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const token = searchParams.get("token") ?? undefined
+  const session = useAuthStore((state) => state.session)
+  const { data: invitation, isLoading, isError } = useInvitation(token)
+  const acceptInvitation = useAcceptInvitation()
+  const logout = useLogout()
 
   if (!token) {
     return (
-      <InvalidInviteCard description="Use the link from your invitation email to join an organization." />
+      <InviteMessageCard
+        title="This invitation link is incomplete"
+        description="Use the link from your invitation email to join an organization."
+      />
     )
   }
 
@@ -54,9 +81,94 @@ export function InviteAcceptPage() {
     )
   }
 
-  if (!invitation || invitation.status !== "pending") {
+  if (isError) {
     return (
-      <InvalidInviteCard description="This invitation has already been used, revoked, or does not exist." />
+      <InviteMessageCard
+        title="We couldn't load this invitation"
+        description="Something went wrong reaching the server. Check your connection and try the link again."
+      />
+    )
+  }
+
+  if (!invitation) {
+    return (
+      <InviteMessageCard
+        title="This invitation is invalid"
+        description="This invitation does not exist. Ask whoever invited you to send a new one."
+      />
+    )
+  }
+
+  if (invitation.status !== "pending") {
+    return (
+      <InviteMessageCard
+        title="This invitation is no longer active"
+        description={
+          invitation.status === "accepted"
+            ? "It has already been accepted. Sign in to reach your organization."
+            : "It has been revoked. Ask whoever invited you to send a new one."
+        }
+      />
+    )
+  }
+
+  // Expiry is checked here as well as inside accept_invitation, so an invitee
+  // who is out of time is told so up front instead of after filling in a form.
+  if (new Date(invitation.expires_at) <= new Date()) {
+    return (
+      <InviteMessageCard
+        title="This invitation has expired"
+        description="Invitations are valid for 7 days. Ask whoever invited you to resend it from their organization's Members page."
+      />
+    )
+  }
+
+  const signedInEmail = session?.user.email
+
+  if (signedInEmail && signedInEmail.toLowerCase() !== invitation.email.toLowerCase()) {
+    return (
+      <InviteMessageCard
+        title="This invitation is for a different account"
+        description={`It was sent to ${invitation.email}, but you're signed in as ${signedInEmail}. Sign out and use the invited address.`}
+      >
+        <Button
+          className="w-full"
+          disabled={logout.isPending}
+          onClick={() => logout.mutate()}
+        >
+          {logout.isPending ? "Signing out..." : "Sign out"}
+        </Button>
+      </InviteMessageCard>
+    )
+  }
+
+  if (session) {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex size-9 items-center justify-center rounded-lg bg-accent">
+            <Mail className="size-5 text-accent-foreground" />
+          </div>
+          <CardTitle className="mt-3">Join {invitation.organization_name}</CardTitle>
+          <CardDescription>
+            You've been invited as {invitation.role_name}. Accepting adds this
+            organization to your account.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            className="w-full"
+            disabled={acceptInvitation.isPending}
+            onClick={() =>
+              acceptInvitation.mutate(token, {
+                onSuccess: () => navigate("/", { replace: true }),
+              })
+            }
+          >
+            {acceptInvitation.isPending ? "Joining..." : "Accept invitation"}
+          </Button>
+        </CardContent>
+      </Card>
     )
   }
 
@@ -65,15 +177,22 @@ export function InviteAcceptPage() {
       <CardHeader>
         <CardTitle>Join {invitation.organization_name}</CardTitle>
         <CardDescription>
-          Set your name and password to finish setting up your account.
+          You've been invited as {invitation.role_name}. Create your account to
+          get started.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <InviteAcceptForm
-          token={token}
-          email={invitation.email}
-          organizationName={invitation.organization_name}
-        />
+      <CardContent className="grid gap-4">
+        <InviteSignupForm token={token} email={invitation.email} />
+        <p className="text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <Link
+            to={`/login?redirect=${encodeURIComponent(`/invite/accept?token=${token}`)}`}
+            className="text-primary hover:underline"
+          >
+            Sign in
+          </Link>{" "}
+          to accept it.
+        </p>
       </CardContent>
     </Card>
   )

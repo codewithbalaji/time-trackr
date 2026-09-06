@@ -40,11 +40,21 @@ describe("updateProfile", () => {
     const builder = createQueryBuilderMock({ data: profile, error: null })
     mockSupabase.from.mockReturnValue(builder)
 
-    const result = await updateProfile("user-1", "Jane Smith")
+    const result = await updateProfile("user-1", { full_name: "Jane Smith" })
 
     expect(builder.update).toHaveBeenCalledWith({ full_name: "Jane Smith" })
     expect(builder.eq).toHaveBeenCalledWith("id", "user-1")
     expect(result).toEqual(profile)
+  })
+
+  it("writes only the field it was given, so one form can't clobber another", async () => {
+    // The name form and the theme toggle both write to this row.
+    const builder = createQueryBuilderMock({ data: { id: "user-1" }, error: null })
+    mockSupabase.from.mockReturnValue(builder)
+
+    await updateProfile("user-1", { theme: "light" })
+
+    expect(builder.update).toHaveBeenCalledWith({ theme: "light" })
   })
 
   it("throws when the update fails", async () => {
@@ -52,6 +62,6 @@ describe("updateProfile", () => {
     const builder = createQueryBuilderMock({ data: null, error })
     mockSupabase.from.mockReturnValue(builder)
 
-    await expect(updateProfile("user-1", "Jane Smith")).rejects.toEqual(error)
+    await expect(updateProfile("user-1", { full_name: "Jane Smith" })).rejects.toEqual(error)
   })
 })
