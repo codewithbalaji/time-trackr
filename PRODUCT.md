@@ -40,7 +40,7 @@ Non-goals for the initial product: payroll processing, recruitment, performance 
 
 ## Evidence on Hand
 
-- `docs/product.md` — full product context, target users, core product areas, SaaS direction, non-goals, and product principles (source document for this file).
+- `docs/product.md` — full product context, target users, core product areas, multi-organization direction, non-goals, and product principles (source document for this file).
 - `src/assets/timetrackr-black.png` / `src/assets/TimeTrackr-white.png` — real product logo assets (light/dark theme variants).
 - No testimonials, case studies, press, pricing, or usage data exist yet — do not fabricate any.
 

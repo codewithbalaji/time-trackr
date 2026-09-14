@@ -1,8 +1,8 @@
 # Time Trackr
 
-A SaaS-oriented time tracking application designed to replace spreadsheet-based employee time tracking.
+An open-source time tracking application for teams who want to replace spreadsheet-based time tracking with a proper web app.
 
-The application is initially intended for internal company use, but the architecture is designed to support multiple organizations and future SaaS expansion.
+Time Trackr is self-hostable and built on Supabase/PostgreSQL, so you own your data. It supports multiple organizations with isolated data, so it works equally well for a single team or for hosting several separate organizations on one instance.
 
 ---
 

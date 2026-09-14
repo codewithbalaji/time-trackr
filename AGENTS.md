@@ -2,9 +2,9 @@
 
 ## Project
 
-This repository contains a SaaS Time Tracking application built with React, TypeScript, Vite, and Supabase.
+This repository contains an open-source Time Tracking application built with React, TypeScript, Vite, and Supabase.
 
-The application is initially being built for internal company use but should be architected so it can support multiple organizations and scale as a SaaS product.
+The application is initially being built for internal company use but should be architected so it can support multiple organizations on a single self-hosted instance.
 
 See `docs/product.md` for target users, core product areas, and non-goals.
 

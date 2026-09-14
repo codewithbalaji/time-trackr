@@ -6,13 +6,13 @@ Time Trackr
 
 ## Product Type
 
-SaaS Time Tracking Application
+Open-Source Time Tracking Application
 
 ## Initial Purpose
 
-The company currently uses Excel/spreadsheets to track employee working hours.
+Many teams and companies still use Excel/spreadsheets to track working hours.
 
-The purpose of this application is to replace spreadsheet-based time tracking with a centralized web application.
+The purpose of this application is to replace spreadsheet-based time tracking with a centralized, self-hostable web application that anyone can run and contribute to.
 
 ---
 
@@ -100,9 +100,9 @@ The system is expected to contain:
 
 ---
 
-# SaaS Direction
+# Multi-Organization Direction
 
-Although the first deployment may serve one company, the architecture should support multiple organizations.
+Although a given deployment may serve just one company or team, the architecture should support multiple organizations on a single instance.
 
 Each organization should have isolated access to its own data.
 
