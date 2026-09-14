@@ -25,5 +25,14 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
+    // Placeholder values so `src/lib/supabase.ts`'s env-var guard doesn't
+    // throw on import in environments with no `.env` file (CI, or a
+    // contributor's first `npm test` before creating one). Tests that talk
+    // to Supabase mock `@/lib/supabase` directly; these are never used to
+    // make a real request.
+    env: {
+      VITE_SUPABASE_URL: 'https://placeholder.supabase.co',
+      VITE_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_placeholder',
+    },
   },
 })
