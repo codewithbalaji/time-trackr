@@ -98,11 +98,18 @@ select lives_ok(
   'accept_invitation admits the invited address'
 );
 
+-- Once accepted, the invitee's own "pending invitations sent to their email"
+-- SELECT policy no longer matches this row (status != 'pending'), and they
+-- have no members.invite permission to fall back on -- so this check has to
+-- run above RLS, the same way the RBAC tests check post-write table state.
+reset role;
 select is(
   (select status from public.invitations where token = '11111111-1111-1111-1111-111111111111'),
   'accepted',
   'accept_invitation marks the invitation accepted'
 );
+
+set local role authenticated;
 
 -- Replaying the same token must not create a second membership. The emailed
 -- link is now idempotent by design (mail scanners pre-fetch it), so a repeat
